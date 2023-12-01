@@ -5,6 +5,8 @@
 #              but without castling, en passant, and pawn promotion. The first player side to capture all the
 #              opponent's pieces of one chess piece type wins.
 
+import string
+
 class ChessVar:
     """Represents a variant of chess consisting of a game board, white side, black side, current turn of
     the game, and round number. To win the game, one side must capture all of an opponent's pieces of one type."""
@@ -24,12 +26,62 @@ class ChessVar:
         within the board (an empty list initially). If a square is empty, it is occupied with a "-" in the list.
         For an occupied square, it contains {"location": [color side occupying, chess piece]}.
         For example: {"c2":["white", "pawn"]}"""
-        pass
+        ind = 8
+        for each_row in range(8):
+            row = []
+            if each_row == 0 or each_row == 7:
+                # If this is the first or last row
+                if each_row == 0:
+                    # First row is black side's back row
+                    color = "black"
+                else:
+                    # Last row is white side's back row
+                    color = "white"
+                for place in range(8):
+                    location = str(each_row+ind) + string.ascii_lowercase[place]
+                    if place == 0 or place == 7:
+                        # Places rooks
+                        chess_piece = "rook"
+                    if place == 1 or place == 6:
+                        # Places knights
+                        chess_piece = "knight"
+                    if place == 2 or place == 5:
+                        # Places bishops
+                        chess_piece = "bishop"
+                    if place == 3:
+                        # Place queen
+                        chess_piece = "queen"
+                    if place == 4:
+                        # Place king
+                        chess_piece = "king"
 
+                    row.append({f"{location}": [f"{color}", f"{chess_piece}"]})
+            elif each_row == 1 or each_row == 6:
+                # If pawn row
+                chess_piece = "pawn"
+                if each_row == 1:
+                    # This row is black pawns
+                    color = "black"
+                else:
+                    # This row is white pawns
+                    color = "white"
+                for place in range(8):
+                    location = str(each_row + ind) + string.ascii_lowercase[place]
+                    row.append({f"{location}": [f"{color}", f"{chess_piece}"]})
+            else:
+                # Empty squares
+                for place in range(8):
+                    empty = "-"
+                    location = str(each_row + ind) + string.ascii_lowercase[place]
+                    row.append({f"{location}": f"{empty}"})
+            ind -= 2
+            self._board.append(row)
 
     def display_board(self):
         """Prints current board. Iterates through board and prints what each square contains."""
-        pass
+        for row in self._board:
+            print([square for square in row])
+            print()
 
     def get_game_state(self):
         """Checks for the state of the game and returns 'UNFINISHED', 'WHITE_WON', or 'BLACK_WON.' A
@@ -49,8 +101,8 @@ class ChessVar:
         pass
 
     def get_square(self, sq_location):
-        """Takes square location string and returns what's contained in that square. If square has "-"
-        square is empty and returns None."""
+        """Takes square location string and returns what's contained in that square. If square has "-" as value to
+        location key square is empty and returns None."""
         pass
 
     def is_move_legal(self, original_sq, destination_sq):
@@ -145,3 +197,12 @@ class WhiteSide:
 #    We know there are 8 pawns, 2 rooks, 2 knights, 2 bishops, 1 queen, and 1 king that can be captured per side.
 #    The method then returns 'UNFINISHED' if we did not find any piece has been completely captured, or 'WHITE_WON' or
 #    'BLACK_WON' if we did.
+
+def main():
+    game = ChessVar()
+    game.create_game_board()
+    game.display_board()
+
+
+if __name__ == '__main__':
+    main()
