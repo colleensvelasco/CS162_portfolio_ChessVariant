@@ -12,7 +12,8 @@ class ChessVar:
     the game, and round number. To win the game, one side must capture all of an opponent's pieces of one type."""
 
     def __init__(self):
-        """Creates a ChessVar game with a board, black and white sides, a current turn (side), and round number.
+        """Creates a ChessVar game with a board, black and white sides, a current turn (side),  round number,
+        row_to_list dictionary.
         Initializes board as empty list and white_side as an object of WhiteSide class and black_side as an object
         of BlackSide class. Current turn is initialized to white. Round number initialized to 1."""
         self._board = []
@@ -20,6 +21,8 @@ class ChessVar:
         self._black_side = BlackSide()
         self._current_turn = "white"
         self._round_number = 1
+        self._row_to_list = {"8": 0, "7": 1, "6": 2, "5": 3, "4": 4, "3": 5, "2": 6, "1": 7 }  # Row to list converter
+                                                                                               # Keys=Row, values=list
 
     def create_game_board(self):
         """Creates starting game board 8x8 (rows 1-8) and (columns a-h) consisting of 8 lists (each with 8 elements)
@@ -88,17 +91,46 @@ class ChessVar:
         side wins when one has captured all of an opponent's pieces of one type. Checks white side and black side
         (WhiteSide and BlackSide objects) to see if any of the collected chess pieces in their score contains
         all of that kind."""
-        pass
+        # Returns dictionary score for each side
+        white_score = self._white_side.get_score()
+        black_score = self._black_side.get_score()
+        if (white_score["pawn"] == 8 or white_score["rook"] == 2 or white_score["knight"] == 2 or
+            white_score["bishop"] == 2 or white_score["queen"] == 1 or white_score["king"] == 1):
+            return "WHITE_WON"
+        elif (black_score["pawn"] == 8 or black_score["rook"] == 2 or black_score["knight"] == 2 or
+            black_score["bishop"] == 2 or black_score["queen"] == 1 or black_score["king"] == 1):
+            return "BLACK_WON"
+        # Otherwise, game is unfinished:
+        return "UNFINISHED"
+
 
     def turn_changer(self):
         """Checks whose current_turn it is (black or white) and switches current_turn to other side. Every time black
         makes a move we finish a round, so we update round_number when current_turn changes from 'black' to 'white.'"""
-        pass
+        if self._current_turn == "black":
+            # If it was just black's turn, make it white's turn and go on to next round
+            self._current_turn = "white"
+            self._round_number += 1
+        else:
+            # If it was just white's turn, make it black's turn
+            self._current_turn = "black"
 
     def set_square(self, sq_location, side_color, chess_piece):
         """Takes square location and the side color and chess piece that will occupy the given square and updates it.
         Side color and chess piece can be None if square is now empty."""
-        pass
+        row = sq_location[0]
+        num_list = self._row_to_list[row]
+        for each_square in self._board[num_list]:
+            for key in each_square:
+                if key == sq_location:
+                    # Finds square with specified location
+                    if chess_piece == None:
+                        # If square is now empty
+                        self._board[key] = "-"
+                    else:
+                        # If new chess piece occupies square, update
+                        self._board[key][0] = side_color
+                        self._board[key][1] = chess_piece
 
     def get_square(self, sq_location):
         """Takes square location string and returns what's contained in that square. If square has "-" as value to
