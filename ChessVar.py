@@ -13,7 +13,7 @@ class ChessVar:
 
     def __init__(self):
         """Creates a ChessVar game with a board, black and white sides, a current turn (side),  round number,
-        row_to_list dictionary.
+        row to list in board converter (dictionary).
         Initializes board as empty list and white_side as an object of WhiteSide class and black_side as an object
         of BlackSide class. Current turn is initialized to white. Round number initialized to 1."""
         self._board = []
@@ -118,13 +118,13 @@ class ChessVar:
     def set_square(self, sq_location, side_color, chess_piece):
         """Takes square location and the side color and chess piece that will occupy the given square and updates it.
         Side color and chess piece can be None if square is now empty."""
-        row = sq_location[0]
-        num_list = self._row_to_list[row]
+        row = sq_location[0]                                            # Gets number of row
+        num_list = self._row_to_list[row]                               # Converts row to list in board
         for each_square in self._board[num_list]:
             for key in each_square:
                 if key == sq_location:
                     # Finds square with specified location
-                    if chess_piece == None:
+                    if chess_piece is None:
                         # If square is now empty
                         self._board[key] = "-"
                     else:
@@ -135,7 +135,15 @@ class ChessVar:
     def get_square(self, sq_location):
         """Takes square location string and returns what's contained in that square. If square has "-" as value to
         location key square is empty and returns None."""
-        pass
+        row = sq_location[0]                                            # Gets number of row
+        num_list = self._row_to_list[row]                               # Converts row to list in board
+        for each_square in self._board[num_list]:
+            for key in each_square:
+                if key == sq_location:
+                    if self._board[key] == "-":
+                        return None
+                    # If square isn't empty, returns occupying [color, chess piece]
+                    return self._board[key]
 
     def is_move_legal(self, original_sq, destination_sq):
         """Takes the square moved from (original_sq) and square moved to (destination_sq) and checks if original_sq
@@ -163,7 +171,7 @@ class BlackSide:
 
     def set_score(self, piece_collected):
         """Takes name of chess piece collected (string) and updates BlackSide's score."""
-        pass
+        self._score[piece_collected] += 1               # Increments chess piece collected score by 1
 
     def get_score(self):
         """Returns BlackSide score."""
@@ -180,7 +188,7 @@ class WhiteSide:
 
     def set_score(self, piece_collected):
         """Takes name of chess piece collected (string) and updates WhiteSide's score."""
-        pass
+        self._score[piece_collected] += 1               # Increments chess piece collected score by 1
 
     def get_score(self):
         """Returns WhiteSide score."""
