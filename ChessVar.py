@@ -13,7 +13,7 @@ class ChessVar:
 
     def __init__(self):
         """Creates a ChessVar game with a board, black and white sides, a current turn (side),  round number,
-        row to list in board converter (dictionary).
+        row to list in board converter (dictionary), column to order num in list converter (dictionary).
         Initializes board as empty list and white_side as an object of WhiteSide class and black_side as an object
         of BlackSide class. Current turn is initialized to white. Round number initialized to 1."""
         self._board = []
@@ -23,6 +23,8 @@ class ChessVar:
         self._round_number = 1
         self._row_to_list = {"8": 0, "7": 1, "6": 2, "5": 3, "4": 4, "3": 5, "2": 6, "1": 7 }  # Row to list converter
                                                                                                # Keys=Row, values=list
+        self._col_to_num = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}    # Column to num converter
+                                                                                               # Keys=Col, values=num
 
     def create_game_board(self):
         """Creates starting game board 8x8 (rows 1-8) and (columns a-h) consisting of 8 lists (each with 8 elements)
@@ -115,42 +117,75 @@ class ChessVar:
             # If it was just white's turn, make it black's turn
             self._current_turn = "black"
 
+
     def set_square(self, sq_location, side_color, chess_piece):
         """Takes square location and the side color and chess piece that will occupy the given square and updates it.
         Side color and chess piece can be None if square is now empty."""
         row = sq_location[0]                                            # Gets number of row
+        col = sq_location[1]                                            # Gets letter column
         num_list = self._row_to_list[row]                               # Converts row to list in board
-        for each_square in self._board[num_list]:
-            for key in each_square:
-                if key == sq_location:
-                    # Finds square with specified location
-                    if chess_piece is None:
-                        # If square is now empty
-                        self._board[key] = "-"
-                    else:
-                        # If new chess piece occupies square, update
-                        self._board[key][0] = side_color
-                        self._board[key][1] = chess_piece
+        order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
+        sq = self._board[num_list][order_in_list]                       # Contents of sq
+
+        for key in sq:
+            if key == sq_location:
+                if chess_piece is None:
+                    # If square is now empty
+                    self._board[key] = "-"
+                else:
+                    # If new chess piece occupies square, update
+                    self._board[key][0] = side_color
+                    self._board[key][1] = chess_piece
 
     def get_square(self, sq_location):
         """Takes square location string and returns what's contained in that square. If square has "-" as value to
         location key square is empty and returns None."""
         row = sq_location[0]                                            # Gets number of row
+        col = sq_location[1]                                            # Gets letter column
         num_list = self._row_to_list[row]                               # Converts row to list in board
-        for each_square in self._board[num_list]:
-            for key in each_square:
-                if key == sq_location:
-                    if self._board[key] == "-":
-                        return None
-                    # If square isn't empty, returns occupying [color, chess piece]
-                    return self._board[key]
+        order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
+        sq = self._board[num_list][order_in_list]                       # Contents of sq
+
+        for key in sq:
+            if key == sq_location:
+                if self._board[key] == "-":
+                    return None
+                # If square isn't empty, returns occupying [color, chess piece]
+                return self._board[key]
 
     def is_move_legal(self, original_sq, destination_sq):
-        """Takes the square moved from (original_sq) and square moved to (destination_sq) and checks if original_sq
-        has opponent's piece, and if so returns False. Otherwise, checks the chess piece in the original_sq and
-        makes sure the change in location is legal for that piece type. If not legal or other pieces in path,
-        returns False. Otherwise, returns True. To check what's in square, calls get_square."""
+        """Takes the square moved from (original_sq) and square moved to (destination_sq). Checks the chess piece
+        in the original_sq and makes sure the change in location is legal for that piece type. If not legal or other
+        pieces in path, returns False. Otherwise, returns True. To check what's in square, calls get_square."""
+        # Get_square for original_sq
+        # is color != self._current_turn -> False
+        # Otherwise:
+        # If pawn:
         # If it's the first move, pawn can move forward two spaces
+
+        row_orig = original_sq[0]
+        col_orig = original_sq[1]
+
+        row_dest = destination_sq[0]
+        col_dest = destination_sq[1]
+
+        if row_dest > 7 or row_dest < 0 or col_dest > 7 or col_dest < 0:
+            # If destination square moving to is not on board
+            return False
+
+        in_original_sq = self.get_square(original_sq)
+        if in_original_sq is None or in_original_sq[0] != self._current_turn:
+            # If original square is empty or if has opponent piece
+            return False
+
+        if in_original_sq[1] == "pawn":
+            if self._round_number == 1:
+                # Pawn can move 2 or 1 if it's the first move for that side
+                return row_dest == row_orig + 2 or row_dest == row_orig + 1
+            return row_dest == row_orig + 1
+
+        elif in_original_sq[1] == "rook":
+            return
         pass
 
     def make_move(self, original_sq, destination_sq):
@@ -159,7 +194,12 @@ class ChessVar:
         (calling get_game_state), returns False. Otherwise, makes indicated move and removes captured piece (if any)
         (calling set_square to do so), updates score (if needed), update whose turn (turn_changer), and returns True."""
         pass
-
+        # Check if original_sq has opponent - get_square -> if so, False. if not, makes sure has player's piece
+        # Check is move is illegal - is_move_legal -> if so, False
+        # Check is game over - get_game_state -> if so, False
+        # Otherwise:
+        # Make move - empty original_sq and destination_sq (if has opponent, update score & move - if not, just move)
+        # Update turn
 
 class BlackSide:
     """Represents the black side of the chess variant game."""
