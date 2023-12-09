@@ -43,7 +43,7 @@ class ChessVar:
                     # Last row is white side's back row
                     color = "white"
                 for place in range(8):
-                    location = str(each_row+ind) + string.ascii_lowercase[place]
+                    location = string.ascii_lowercase[place] + str(each_row+ind)
                     if place == 0 or place == 7:
                         # Places rooks
                         chess_piece = "rook"
@@ -71,13 +71,13 @@ class ChessVar:
                     # This row is white pawns
                     color = "white"
                 for place in range(8):
-                    location = str(each_row + ind) + string.ascii_lowercase[place]
+                    location = string.ascii_lowercase[place] + str(each_row + ind)
                     row.append({f"{location}": [f"{color}", f"{chess_piece}"]})
             else:
                 # Empty squares
                 for place in range(8):
                     empty = "-"
-                    location = str(each_row + ind) + string.ascii_lowercase[place]
+                    location = string.ascii_lowercase[place] + str(each_row + ind)
                     row.append({f"{location}": f"{empty}"})
             ind -= 2
             self._board.append(row)
