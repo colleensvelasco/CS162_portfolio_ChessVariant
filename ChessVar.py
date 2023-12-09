@@ -121,8 +121,8 @@ class ChessVar:
     def set_square(self, sq_location, side_color, chess_piece):
         """Takes square location and the side color and chess piece that will occupy the given square and updates it.
         Side color and chess piece can be None if square is now empty."""
-        row = sq_location[0]                                            # Gets number of row
-        col = sq_location[1]                                            # Gets letter column
+        row = sq_location[1]                                            # Gets number of row
+        col = sq_location[0]                                            # Gets letter column
         num_list = self._row_to_list[row]                               # Converts row to list in board
         order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
         sq = self._board[num_list][order_in_list]                       # Contents of sq
@@ -140,8 +140,8 @@ class ChessVar:
     def get_square(self, sq_location):
         """Takes square location string and returns what's contained in that square. If square has "-" as value to
         location key square is empty and returns None."""
-        row = sq_location[0]                                            # Gets number of row
-        col = sq_location[1]                                            # Gets letter column
+        row = sq_location[1]                                            # Gets number of row
+        col = sq_location[0]                                            # Gets letter column
         num_list = self._row_to_list[row]                               # Converts row to list in board
         order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
         sq = self._board[num_list][order_in_list]                       # Contents of sq
@@ -154,7 +154,7 @@ class ChessVar:
                 return self._board[key]
 
     def is_move_legal(self, original_sq, destination_sq):
-        """Takes the square moved from (original_sq) and square moved to (destination_sq). Checks the chess piece
+        """Takes the square moved from (original_sq) (i.e. "b3")and square moved to (destination_sq). Checks the chess piece
         in the original_sq and makes sure the change in location is legal for that piece type. If not legal or other
         pieces in path, returns False. Otherwise, returns True. To check what's in square, calls get_square."""
         # Get_square for original_sq
@@ -163,11 +163,11 @@ class ChessVar:
         # If pawn:
         # If it's the first move, pawn can move forward two spaces
 
-        row_orig = original_sq[0]
-        col_orig = original_sq[1]
+        row_orig = self._row_to_list[original_sq[1]]        # gets row -> corresponding list
+        col_orig = self._col_to_num[original_sq[0]]         # gets column -> corresponding order in list
 
-        row_dest = destination_sq[0]
-        col_dest = destination_sq[1]
+        row_dest = self._row_to_list[destination_sq[1]]
+        col_dest = self._col_to_num[destination_sq[0]]
 
         if row_dest > 7 or row_dest < 0 or col_dest > 7 or col_dest < 0:
             # If destination square moving to is not on board
@@ -186,7 +186,7 @@ class ChessVar:
 
         elif in_original_sq[1] == "rook":
             return
-        pass
+
 
     def make_move(self, original_sq, destination_sq):
         """Takes strings representing square moved from and square moved to. If square moved from has
