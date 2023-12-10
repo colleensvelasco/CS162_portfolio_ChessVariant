@@ -16,7 +16,7 @@ class ChessVar:
         row to list in board converter (dictionary), column to order num in list converter (dictionary).
         Initializes board as empty list and white_side as an object of WhiteSide class and black_side as an object
         of BlackSide class. Current turn is initialized to white. Round number initialized to 1."""
-        self._board = []
+        self._board = self.create_game_board()
         self._white_side = WhiteSide()
         self._black_side = BlackSide()
         self._current_turn = "white"
@@ -24,13 +24,13 @@ class ChessVar:
         self._row_to_list = {"8": 0, "7": 1, "6": 2, "5": 3, "4": 4, "3": 5, "2": 6, "1": 7 }  # Row to list converter
                                                                                                # Keys=Row, values=list
         self._col_to_num = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}    # Column to num converter
-                                                                                               # Keys=Col, values=num
 
     def create_game_board(self):
         """Creates starting game board 8x8 (rows 1-8) and (columns a-h) consisting of 8 lists (each with 8 elements)
         within the board (an empty list initially). If a square is empty, it is occupied with a "-" in the list.
         For an occupied square, it contains {"location": [color side occupying, chess piece]}.
         For example: {"c2":["white", "pawn"]}"""
+        self._board = []
         ind = 8
         for each_row in range(8):
             row = []
@@ -43,7 +43,7 @@ class ChessVar:
                     # Last row is white side's back row
                     color = "white"
                 for place in range(8):
-                    location = string.ascii_lowercase[place] + str(each_row+ind)
+                    location = string.ascii_lowercase[place] + str(each_row + ind)
                     if place == 0 or place == 7:
                         # Places rooks
                         chess_piece = "rook"
@@ -78,9 +78,10 @@ class ChessVar:
                 for place in range(8):
                     empty = "-"
                     location = string.ascii_lowercase[place] + str(each_row + ind)
-                    row.append({f"{location}": [f"{empty}",f"{empty}"]})
+                    row.append({f"{location}": [f"{empty}", f"{empty}"]})
             ind -= 2
             self._board.append(row)
+            # Keys=Col, values=num
 
     def display_board(self):
         """Prints current board. Iterates through board and prints what each square contains."""
