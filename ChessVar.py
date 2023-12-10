@@ -60,7 +60,7 @@ class ChessVar:
                         # Place king
                         chess_piece = "king"
 
-                    row.append({f"{location}": [f"{color}", f"{chess_piece}"]})
+                    row.append(f"{location}: {color} {chess_piece}")
             elif each_row == 1 or each_row == 6:
                 # If pawn row
                 chess_piece = "pawn"
@@ -72,13 +72,13 @@ class ChessVar:
                     color = "white"
                 for place in range(8):
                     location = string.ascii_lowercase[place] + str(each_row + ind)
-                    row.append({f"{location}": [f"{color}", f"{chess_piece}"]})
+                    row.append(f"{location}: {color} {chess_piece}")
             else:
                 # Empty squares
                 for place in range(8):
                     empty = "-"
                     location = string.ascii_lowercase[place] + str(each_row + ind)
-                    row.append({f"{location}": [f"{empty}", f"{empty}"]})
+                    row.append(f"{location}: {empty} {empty}")
             ind -= 2
             self._board.append(row)
             # Keys=Col, values=num
@@ -129,15 +129,13 @@ class ChessVar:
         col = sq_location[0]                                            # Gets letter column
         num_list = self._row_to_list[row]                               # Converts row to list in board
         order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
-        sq = self._board[num_list][order_in_list]                       # Contents of sq
 
         if chess_piece == "-":
             # If square is now empty
-            sq[sq_location] = ["-","-"]
+            self._board[num_list][order_in_list] = f"{sq_location}: {side_color} {chess_piece}"
         else:
             # If new chess piece occupies square, update
-            sq[sq_location][0] = side_color
-            sq[sq_location][1] = chess_piece
+            self._board[num_list][order_in_list] = f"{sq_location}: {side_color} {chess_piece}"
 
     def get_square(self, sq_location):
         """Takes square location string and returns what's contained in that square. If square has "-" as value to
@@ -148,7 +146,7 @@ class ChessVar:
         order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
         sq = self._board[num_list][order_in_list]                       # Contents of sq
 
-        return sq[sq_location]              # [color, chess piece] and ["-","-"] if empty
+        return sq              # "sq_location: side color chess piece" and "sq_location: - -" if empty
 
     def is_move_legal(self, original_sq, destination_sq):
         """Takes the square moved from (original_sq) (i.e. "b3")and square moved to (destination_sq). Checks the chess piece
@@ -156,12 +154,12 @@ class ChessVar:
         pieces in path, returns False. Otherwise, returns True. To check what's in square, calls get_square."""
 
         in_original_sq = self.get_square(original_sq)
-        if in_original_sq == ["-","-"] or in_original_sq[0] != self._current_turn:
+        if "-" in in_original_sq or in_original_sq[4:9] != self._current_turn:
             # If original square is empty or if has opponent piece
             return False
 
         in_dest_sq = self.get_square(destination_sq)
-        if in_dest_sq[0] == self._current_turn:
+        if in_dest_sq[4:9] == self._current_turn:
             # If destination square is occupied and has current turn's piece
             return False
 
@@ -215,15 +213,15 @@ class ChessVar:
             in_dest_square = self.get_square(destination_sq)
 
             # If destination sq is occupied and has opponent, update score of current player
-            if in_dest_square[0] != "-" and in_dest_square[0] != self._current_turn:
+            if "-" not in in_dest_square and in_dest_square[4:9] != self._current_turn:
                 if self._current_turn == "white":
-                    self._white_side.set_score(in_dest_square[1])
+                    self._white_side.set_score(in_dest_square[10:])
                 elif self._current_turn == "black":
-                    self._black_side.set_score(in_dest_square[1])
+                    self._black_side.set_score(in_dest_square[10:])
 
             # Still make move regardless
             self.set_square(original_sq, "-", "-")                                  # empty original_sq
-            self.set_square(destination_sq, self._current_turn, in_orig_square[1])  # update destination_sq with current
+            self.set_square(destination_sq, self._current_turn, in_orig_square[10:]) # update destination_sq with current
                                                                                     # player and its chess piece
             # Update turn
             self.turn_changer()
@@ -297,14 +295,12 @@ class PawnMove(ChessPieceMove):
             if abs(row_orig-row_dest) == 2 and col_orig == col_dest:
                 if row_orig > row_dest:
                     sq_bw = board_game[row_dest+1][col_orig]
-                    for value in sq_bw.values():
-                        if value != ["-","-"]:
-                            return False
+                    if "-" not in sq_bw:
+                        return False
                 elif row_dest > row_orig:
                     sq_bw = board_game[row_orig + 1][col_orig]
-                    for value in sq_bw.values():
-                        if value != ["-", "-"]:
-                            return False
+                    if "-" not in sq_bw:
+                        return False
                 return True                                      # if nothing in the way
         # If not first move, can only move forward 1
         return abs(row_orig-row_dest) == 1 and col_orig == col_dest
@@ -331,17 +327,13 @@ class RookMove(ChessPieceMove):
             if col_orig > col_dest:                                          # trying to move left (from starting board)
                 for each_col_num in range(col_dest + 1, col_orig):
                     sq = game_board[row_orig][each_col_num]
-                    for value in sq.values():
-                        if value != ["-","-"]:
-                            # If there's a piece in the way
-                            return False
+                    if "-" not in sq:
+                        return False                                         # piece in way
             elif col_dest > col_orig:                                        # trying to move right (from starting board)
                 for each_col_num in range(col_orig + 1, col_dest):
                     sq = game_board[row_orig][each_col_num]
-                    for value in sq.values():
-                        if value != ["-","-"]:
-                            # If there's a piece in the way
-                            return False
+                    if "-" not in sq_bw:
+                        return False                                         # piece in way
             return True                                                      # No piece in the way
 
         elif col_orig == col_dest:
@@ -349,17 +341,13 @@ class RookMove(ChessPieceMove):
             if row_dest > row_orig:                                          # trying to move down (from starting board)
                 for row_num in range(row_orig+1, row_dest):
                     sq = game_board[row_num][col_orig]
-                    for value in sq.values():
-                        if value != ["-", "-"]:
-                            # If there's a piece in the way
-                            return False
+                    if "-" not in sq:
+                        return False
             elif row_orig > row_dest:                                        # trying to move up (from starting board)
                 for row_num in range(row_dest+1, row_orig):
                     sq = game_board[row_num][col_orig]
-                    for value in sq.values():
-                        if value != ["-", "-"]:
-                            # If there's a piece in the way
-                            return False
+                    if "-" not in sq:
+                        return False
             return True                                                      # No piece in the way
         # If tried diagonal:
         return False
@@ -429,10 +417,8 @@ class BishopMove(ChessPieceMove):
                 row_start += 1
                 col_start += 1
                 sq = game_board[row_start][col_start]
-                for key in sq:
-                    if sq[key] != "-":
-                        # If there's a piece in the way
-                        return False
+                if "-" not in sq:
+                    return False
             # If diagonal and no piece found in its way, return True
             return True
         # Not moving diagonally
@@ -532,8 +518,8 @@ class KingMove(ChessPieceMove):
 def main():
     game = ChessVar()
     game.create_game_board()
-    game.make_move("e2", "e4")
     game.display_board()
+
 
 
 if __name__ == '__main__':

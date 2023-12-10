@@ -21,15 +21,14 @@ class TestChessVar(unittest.TestCase):
         """Tests create_game_board and get_square methods for empty square from ClassVar class."""
         today_game = ChessVar()
         today_game.create_game_board()
-        # Returns None is sq is empty.
-        self.assertEqual(today_game.get_square("d5"), ["-","-"])
+        self.assertEqual(today_game.get_square("d5"), "d5: - -")
 
     def test4(self):
         """Tests create_game_board and get_square methods for occupied square from ClassVar class."""
         today_game = ChessVar()
         today_game.create_game_board()
-        # Returns [color, chess piece] is sq is occupied.
-        self.assertEqual(today_game.get_square("c2"), ["white", "pawn"])
+        # Returns "sq_location: color chess_piece" if sq is occupied.
+        self.assertEqual(today_game.get_square("c2"), "c2: white pawn")
 
     def test5(self):
         """Tests set_square for now empty square for class ChessVar."""
@@ -37,7 +36,7 @@ class TestChessVar(unittest.TestCase):
         today_game.create_game_board()
         today_game.set_square("e1", "-", "-")
         # Empties square
-        self.assertEqual(today_game.get_square("e1"), ["-", "-"])
+        self.assertEqual(today_game.get_square("e1"), "e1: - -")
 
     def test6(self):
         """Tests set_square for empty square, now occupied for class ChessVar."""
@@ -45,7 +44,7 @@ class TestChessVar(unittest.TestCase):
         today_game.create_game_board()
         today_game.set_square("d4", "white", "knight")
         # Empty square is now occupied
-        self.assertEqual(today_game.get_square("d4"), ["white", "knight"])
+        self.assertEqual(today_game.get_square("d4"), "d4: white knight")
 
     def test7(self):
         """Tests set_square for previously occupied square, now occupied with different piece for class ChessVar."""
@@ -53,7 +52,7 @@ class TestChessVar(unittest.TestCase):
         today_game.create_game_board()
         today_game.set_square("d7", "white", "knight")
         # Occupied square is now occupied with another piece
-        self.assertEqual(today_game.get_square("d7"), ["white", "knight"])
+        self.assertEqual(today_game.get_square("d7"), "d7: white knight")
 
     def test8(self):
         """Tests is_move_legal and make_move (ChessVar methods) for pawn and is_move_valid (PawnMove method)."""
