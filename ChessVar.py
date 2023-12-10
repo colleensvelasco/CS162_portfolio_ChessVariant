@@ -30,7 +30,7 @@ class ChessVar:
         within the board (an empty list initially). If a square is empty, it is occupied with a "-" in the list.
         For an occupied square, it contains {"location": [color side occupying, chess piece]}.
         For example: {"c2":["white", "pawn"]}"""
-        self._board = []
+        board_whole = list()
         ind = 8
         for each_row in range(8):
             row = []
@@ -80,7 +80,9 @@ class ChessVar:
                     location = string.ascii_lowercase[place] + str(each_row + ind)
                     row.append(f"{location}: {empty} {empty}")
             ind -= 2
-            self._board.append(row)
+            board_whole.append(row)
+        return board_whole
+
             # Keys=Col, values=num
 
     def display_board(self):
@@ -127,24 +129,24 @@ class ChessVar:
         Side color and chess piece can be None if square is now empty."""
         row = sq_location[1]                                            # Gets number of row
         col = sq_location[0]                                            # Gets letter column
-        num_list = self._row_to_list[row]                               # Converts row to list in board
-        order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
+        row_num = int(self._row_to_list[row])                               # Converts row to list in board
+        col_order = self._col_to_num[col]                           # Converts column to order num in list of board
 
         if chess_piece == "-":
             # If square is now empty
-            self._board[num_list][order_in_list] = f"{sq_location}: {side_color} {chess_piece}"
+            self._board[row_num][col_order] = f"{sq_location}: {side_color} {chess_piece}"
         else:
             # If new chess piece occupies square, update
-            self._board[num_list][order_in_list] = f"{sq_location}: {side_color} {chess_piece}"
+            self._board[row_num][col_order] = f"{sq_location}: {side_color} {chess_piece}"
 
     def get_square(self, sq_location):
         """Takes square location string and returns what's contained in that square. If square has "-" as value to
         location key square is empty and returns None."""
         row = sq_location[1]                                            # Gets number of row
         col = sq_location[0]                                            # Gets letter column
-        num_list = self._row_to_list[row]                               # Converts row to list in board
-        order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
-        sq = self._board[num_list][order_in_list]                       # Contents of sq
+        row_num = int(self._row_to_list[row])                               # Converts row to list in board
+        col_order = self._col_to_num[col]                           # Converts column to order num in list of board
+        sq = self._board[row_num][col_order]                       # Contents of sq
 
         return sq              # "sq_location: side color chess piece" and "sq_location: - -" if empty
 
@@ -517,9 +519,7 @@ class KingMove(ChessPieceMove):
 
 def main():
     game = ChessVar()
-    game.create_game_board()
     game.display_board()
-
 
 
 if __name__ == '__main__':
