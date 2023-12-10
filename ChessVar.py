@@ -198,6 +198,8 @@ class ChessVar:
         opponent's piece, illegal move attempted (calls is_move_legal to check), or game is over
         (calling get_game_state), returns False. Otherwise, makes indicated move and removes captured piece (if any)
         (calling set_square to do so), updates score (if needed), update whose turn (turn_changer), and returns True."""
+        print(f"from_square is {original_sq} and to_square is {destination_sq}")
+
         # Checks if original_sq has opponent or empty, if destination_sq has current player's piece, or if move is
         # illegal -> if so, return FALSE
         if self.is_move_legal(original_sq, destination_sq) is False:
