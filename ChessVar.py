@@ -131,7 +131,7 @@ class ChessVar:
         order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
         sq = self._board[num_list][order_in_list]                       # Contents of sq
 
-        if chess_piece is None:
+        if chess_piece == "-":
             # If square is now empty
             sq[sq_location] = ["-","-"]
         else:
@@ -148,9 +148,7 @@ class ChessVar:
         order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
         sq = self._board[num_list][order_in_list]                       # Contents of sq
 
-        if sq[sq_location] == ["-","-"]:
-            return None                     # If square is empty, return None
-        return sq[sq_location]              # Otherwise: [color, chess piece]
+        return sq[sq_location]              # [color, chess piece] and ["-","-"] if empty
 
     def is_move_legal(self, original_sq, destination_sq):
         """Takes the square moved from (original_sq) (i.e. "b3")and square moved to (destination_sq). Checks the chess piece
@@ -158,12 +156,12 @@ class ChessVar:
         pieces in path, returns False. Otherwise, returns True. To check what's in square, calls get_square."""
 
         in_original_sq = self.get_square(original_sq)
-        if in_original_sq is None or in_original_sq[0] != self._current_turn:
+        if in_original_sq == ["-","-"] or in_original_sq[0] != self._current_turn:
             # If original square is empty or if has opponent piece
             return False
 
         in_dest_sq = self.get_square(destination_sq)
-        if in_dest_sq is not None and in_dest_sq[0] == self._current_turn:
+        if in_dest_sq[0] == self._current_turn:
             # If destination square is occupied and has current turn's piece
             return False
 
@@ -217,14 +215,14 @@ class ChessVar:
             in_dest_square = self.get_square(destination_sq)
 
             # If destination sq is occupied and has opponent, update score of current player
-            if in_dest_square is not None and in_dest_square[0] != self._current_turn:
+            if in_dest_square[0] != "-" and in_dest_square[0] != self._current_turn:
                 if self._current_turn == "white":
                     self._white_side.set_score(in_dest_square[1])
                 elif self._current_turn == "black":
                     self._black_side.set_score(in_dest_square[1])
 
             # Still make move regardless
-            self.set_square(original_sq, None, None)                                # empty original_sq
+            self.set_square(original_sq, "-", "-")                                  # empty original_sq
             self.set_square(destination_sq, self._current_turn, in_orig_square[1])  # update destination_sq with current
                                                                                     # player and its chess piece
             # Update turn

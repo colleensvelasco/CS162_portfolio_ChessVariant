@@ -22,7 +22,7 @@ class TestChessVar(unittest.TestCase):
         today_game = ChessVar()
         today_game.create_game_board()
         # Returns None is sq is empty.
-        self.assertIsNone(today_game.get_square("d5"))
+        self.assertEqual(today_game.get_square("d5"), ["-","-"])
 
     def test4(self):
         """Tests create_game_board and get_square methods for occupied square from ClassVar class."""
@@ -35,9 +35,9 @@ class TestChessVar(unittest.TestCase):
         """Tests set_square for now empty square for class ChessVar."""
         today_game = ChessVar()
         today_game.create_game_board()
-        today_game.set_square("e1", None, None)
+        today_game.set_square("e1", "-", "-")
         # Empties square
-        self.assertIsNone(today_game.get_square("e1"))
+        self.assertEqual(today_game.get_square("e1"), ["-", "-"])
 
     def test6(self):
         """Tests set_square for empty square, now occupied for class ChessVar."""
