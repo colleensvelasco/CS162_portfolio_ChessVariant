@@ -78,7 +78,7 @@ class ChessVar:
                 for place in range(8):
                     empty = "-"
                     location = string.ascii_lowercase[place] + str(each_row + ind)
-                    row.append({f"{location}": f"{empty}"})
+                    row.append({f"{location}": [f"{empty}",f"{empty}"]})
             ind -= 2
             self._board.append(row)
 
@@ -117,6 +117,9 @@ class ChessVar:
             # If it was just white's turn, make it black's turn
             self._current_turn = "black"
 
+    def get_current_turn(self):
+        """Returns current_turn (current player)."""
+        return self._current_turn
 
     def set_square(self, sq_location, side_color, chess_piece):
         """Takes square location and the side color and chess piece that will occupy the given square and updates it.
@@ -127,15 +130,13 @@ class ChessVar:
         order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
         sq = self._board[num_list][order_in_list]                       # Contents of sq
 
-        for key in sq:
-            if key == sq_location:
-                if chess_piece is None:
-                    # If square is now empty
-                    self._board[key] = "-"
-                else:
-                    # If new chess piece occupies square, update
-                    self._board[key][0] = side_color
-                    self._board[key][1] = chess_piece
+        if chess_piece is None:
+            # If square is now empty
+            sq[sq_location] = ["-","-"]
+        else:
+            # If new chess piece occupies square, update
+            sq[sq_location][0] = side_color
+            sq[sq_location][1] = chess_piece
 
     def get_square(self, sq_location):
         """Takes square location string and returns what's contained in that square. If square has "-" as value to
@@ -146,12 +147,9 @@ class ChessVar:
         order_in_list = self._col_to_num[col]                           # Converts column to order num in list of board
         sq = self._board[num_list][order_in_list]                       # Contents of sq
 
-        for key in sq:
-            if key == sq_location:
-                if self._board[key] == "-":
-                    return None
-                # If square isn't empty, returns occupying [color, chess piece]
-                return self._board[key]
+        if sq[sq_location] == ["-","-"]:
+            return None                     # If square is empty, return None
+        return sq[sq_location]              # Otherwise: [color, chess piece]
 
     def is_move_legal(self, original_sq, destination_sq):
         """Takes the square moved from (original_sq) (i.e. "b3")and square moved to (destination_sq). Checks the chess piece
@@ -164,8 +162,8 @@ class ChessVar:
             return False
 
         in_dest_sq = self.get_square(destination_sq)
-        if in_dest_sq[0] == self._current_turn:
-            # If destination square has current turn's piece
+        if in_dest_sq is not None and in_dest_sq[0] == self._current_turn:
+            # If destination square is occupied and has current turn's piece
             return False
 
         # ALREADY CHECKED FOR INVALIDITY IN ORIGINAL AND DESTINATION SQUARES,
@@ -173,7 +171,7 @@ class ChessVar:
 
         if in_original_sq[1] == "pawn":
             pawn_move = PawnMove(original_sq, destination_sq)
-            return pawn_move.is_move_valid(self._round_number)
+            return pawn_move.is_move_valid(self._round_number, self._board)
 
         elif in_original_sq[1] == "rook":
             rook_move = RookMove(original_sq, destination_sq)
@@ -285,16 +283,32 @@ class PawnMove(ChessPieceMove):
         num in list converter."""
         super().__init__(original_sq, destination_sq)
 
-    def is_move_valid(self, round_number):
+    def is_move_valid(self, round_number, board_game):
         """Checks if proposed pawn move is valid. Pawns can move forward 1 and if it's the first move, can move
         forward 2."""
         row_orig = self._row_to_list[self._original_sq[1]]  # gets row -> corresponding list NUM
+        col_orig = self._col_to_num[self._original_sq[0]]   # gets column -> corresponding order NUM in list
+
         row_dest = self._row_to_list[self._destination_sq[1]]
+        col_dest = self._col_to_num[self._destination_sq[0]]
+
 
         if round_number == 1:
             # Pawn can move 2 or 1 if it's the first move for that side
-            return row_dest == row_orig + 2 or row_dest == row_orig + 1
-        return row_dest == row_orig + 1
+            if abs(row_orig-row_dest) == 2 and col_orig == col_dest:
+                if row_orig > row_dest:
+                    sq_bw = board_game[row_dest+1][col_orig]
+                    for value in sq_bw.values():
+                        if value != ["-","-"]:
+                            return False
+                elif row_dest > row_orig:
+                    sq_bw = board_game[row_orig + 1][col_orig]
+                    for value in sq_bw.values():
+                        if value != ["-", "-"]:
+                            return False
+                return True                                      # if nothing in the way
+        # If not first move, can only move forward 1
+        return abs(row_orig-row_dest) == 1 and col_orig == col_dest
 
 class RookMove(ChessPieceMove):
     """Represents a RookMove that inherits from ChessPieceMove."""
@@ -318,36 +332,36 @@ class RookMove(ChessPieceMove):
             if col_orig > col_dest:                                          # trying to move left (from starting board)
                 for each_col_num in range(col_dest + 1, col_orig):
                     sq = game_board[row_orig][each_col_num]
-                    for key in sq:
-                        if sq[key] != "-":
+                    for value in sq.values():
+                        if value != ["-","-"]:
                             # If there's a piece in the way
                             return False
             elif col_dest > col_orig:                                        # trying to move right (from starting board)
                 for each_col_num in range(col_orig + 1, col_dest):
                     sq = game_board[row_orig][each_col_num]
-                    for key in sq:
-                        if sq[key] != "-":
+                    for value in sq.values():
+                        if value != ["-","-"]:
                             # If there's a piece in the way
                             return False
-            return True
+            return True                                                      # No piece in the way
 
         elif col_orig == col_dest:
             # Piece is moving forwards/backwards - SAME COLUMN
             if row_dest > row_orig:                                          # trying to move down (from starting board)
                 for row_num in range(row_orig+1, row_dest):
                     sq = game_board[row_num][col_orig]
-                    for key in sq:
-                        if sq[key] != "-":
+                    for value in sq.values():
+                        if value != ["-", "-"]:
                             # If there's a piece in the way
                             return False
             elif row_orig > row_dest:                                        # trying to move up (from starting board)
                 for row_num in range(row_dest+1, row_orig):
                     sq = game_board[row_num][col_orig]
-                    for key in sq:
-                        if sq[key] != "-":
+                    for value in sq.values():
+                        if value != ["-", "-"]:
                             # If there's a piece in the way
                             return False
-            return True
+            return True                                                      # No piece in the way
         # If tried diagonal:
         return False
 
@@ -519,6 +533,7 @@ class KingMove(ChessPieceMove):
 def main():
     game = ChessVar()
     game.create_game_board()
+    game.make_move("e2", "e4")
     game.display_board()
 
 
