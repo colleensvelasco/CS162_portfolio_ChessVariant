@@ -157,35 +157,43 @@ class ChessVar:
         """Takes the square moved from (original_sq) (i.e. "b3")and square moved to (destination_sq). Checks the chess piece
         in the original_sq and makes sure the change in location is legal for that piece type. If not legal or other
         pieces in path, returns False. Otherwise, returns True. To check what's in square, calls get_square."""
-        # Get_square for original_sq
-        # is color != self._current_turn -> False
-        # Otherwise:
-        # If pawn:
-        # If it's the first move, pawn can move forward two spaces
-
-        row_orig = self._row_to_list[original_sq[1]]        # gets row -> corresponding list
-        col_orig = self._col_to_num[original_sq[0]]         # gets column -> corresponding order in list
-
-        row_dest = self._row_to_list[destination_sq[1]]
-        col_dest = self._col_to_num[destination_sq[0]]
-
-        if row_dest > 7 or row_dest < 0 or col_dest > 7 or col_dest < 0:
-            # If destination square moving to is not on board
-            return False
 
         in_original_sq = self.get_square(original_sq)
         if in_original_sq is None or in_original_sq[0] != self._current_turn:
             # If original square is empty or if has opponent piece
             return False
 
+        in_dest_sq = self.get_square(destination_sq)
+        if in_dest_sq[0] == self._current_turn:
+            # If destination square has current turn's piece
+            return False
+
+        # ALREADY CHECKED FOR INVALIDITY IN ORIGINAL AND DESTINATION SQUARES,
+        # CHECK ON CHESS PIECE VALIDITY
+
         if in_original_sq[1] == "pawn":
-            if self._round_number == 1:
-                # Pawn can move 2 or 1 if it's the first move for that side
-                return row_dest == row_orig + 2 or row_dest == row_orig + 1
-            return row_dest == row_orig + 1
+            pawn_move = PawnMove(original_sq, destination_sq)
+            return pawn_move.is_move_valid(self._round_number)
 
         elif in_original_sq[1] == "rook":
-            return
+            rook_move = RookMove(original_sq, destination_sq)
+            return rook_move.is_move_valid(self._board)
+
+        elif in_original_sq[1] == "knight":
+            knight_move = KnightMove(original_sq, destination_sq)
+            return knight_move.is_move_valid()
+
+        elif in_original_sq[1] == "bishop":
+            bishop_move = BishopMove(original_sq, destination_sq)
+            return bishop_move.is_move_valid(self._board)
+
+        elif in_original_sq[1] == "queen":
+            queen_move = QueenMove(original_sq, destination_sq)
+            return queen_move.is_move_valid(self._board)
+
+        elif in_original_sq[1] == "king":
+            king_move = KingMove(original_sq, destination_sq)
+            return king_move.is_move_valid()
 
 
     def make_move(self, original_sq, destination_sq):
@@ -193,13 +201,37 @@ class ChessVar:
         opponent's piece, illegal move attempted (calls is_move_legal to check), or game is over
         (calling get_game_state), returns False. Otherwise, makes indicated move and removes captured piece (if any)
         (calling set_square to do so), updates score (if needed), update whose turn (turn_changer), and returns True."""
-        pass
-        # Check if original_sq has opponent - get_square -> if so, False. if not, makes sure has player's piece
-        # Check is move is illegal - is_move_legal -> if so, False
+        # Checks if original_sq has opponent or empty, if destination_sq has current player's piece, or if move is
+        # illegal -> if so, return FALSE
+        if self.is_move_legal(original_sq, destination_sq) is False:
+            return False
+
         # Check is game over - get_game_state -> if so, False
+        elif self.get_game_state() == "WHITE_WON" or self.get_game_state() == "BLACK_WON":
+            return False
+
         # Otherwise:
         # Make move - empty original_sq and destination_sq (if has opponent, update score & move - if not, just move)
         # Update turn
+        else:
+            in_orig_square = self.get_square(original_sq)
+            in_dest_square = self.get_square(destination_sq)
+
+            # If destination sq is occupied and has opponent, update score of current player
+            if in_dest_square is not None and in_dest_square[0] != self._current_turn:
+                if self._current_turn == "white":
+                    self._white_side.set_score(in_dest_square[1])
+                elif self._current_turn == "black":
+                    self._black_side.set_score(in_dest_square[1])
+
+            # Still make move regardless
+            self.set_square(original_sq, None, None)                                # empty original_sq
+            self.set_square(destination_sq, self._current_turn, in_orig_square[1])  # update destination_sq with current
+                                                                                    # player and its chess piece
+            # Update turn
+            self.turn_changer()
+
+            return True
 
 class BlackSide:
     """Represents the black side of the chess variant game."""
@@ -233,6 +265,212 @@ class WhiteSide:
     def get_score(self):
         """Returns WhiteSide score."""
         return self._score
+
+class ChessPieceMove:
+    """Represents a ChessPieceMove with an original square and destination square."""
+    def __init__(self, original_sq, destination_sq):
+        """Creates a ChessPieceMove with an original_sq, destination_sq, row to list int converter, and column to order
+        num in list converter."""
+        self._original_sq = original_sq    # COL LETTER, ROW NUMBER "b7"
+        self._destination_sq = destination_sq
+        self._row_to_list = {"8": 0, "7": 1, "6": 2, "5": 3, "4": 4, "3": 5, "2": 6, "1": 7}  # Row to list converter
+        self._col_to_num = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}  # Column to num converter
+
+
+
+class PawnMove(ChessPieceMove):
+    """Represents a PawnMove that inherits from ChessPieceMove."""
+    def __init__(self, original_sq, destination_sq):
+        """Creates a PawnMove with an original_sq, destination_sq, row to list int converter, and column to order
+        num in list converter."""
+        super().__init__(original_sq, destination_sq)
+
+    def is_move_valid(self, round_number):
+        """Checks if proposed pawn move is valid. Pawns can move forward 1 and if it's the first move, can move
+        forward 2."""
+        row_orig = self._row_to_list[self._original_sq[1]]  # gets row -> corresponding list NUM
+        row_dest = self._row_to_list[self._destination_sq[1]]
+
+        if round_number == 1:
+            # Pawn can move 2 or 1 if it's the first move for that side
+            return row_dest == row_orig + 2 or row_dest == row_orig + 1
+        return row_dest == row_orig + 1
+
+class RookMove(ChessPieceMove):
+    """Represents a RookMove that inherits from ChessPieceMove."""
+
+    def __init__(self, original_sq, destination_sq):
+        """Creates a RookMove with an original_sq, destination_sq, row to list int converter, and column to order
+        num in list converter."""
+        super().__init__(original_sq, destination_sq)
+
+    def is_move_valid(self, game_board):
+        """Checks if proposed rook move is valid. Rooks can move forwards, backwards, or sideways any number
+        of squares, as long as no other pieces are in its way."""
+        row_orig = self._row_to_list[self._original_sq[1]]  # gets row -> corresponding list NUM
+        col_orig = self._col_to_num[self._original_sq[0]]  # gets column -> corresponding order NUM in list
+
+        row_dest = self._row_to_list[self._destination_sq[1]]
+        col_dest = self._col_to_num[self._destination_sq[0]]
+
+        if row_orig == row_dest:
+            # Piece is moving sideways - SAME ROW
+            if col_orig > col_dest:                                          # trying to move left (from starting board)
+                for each_col_num in range(col_dest + 1, col_orig):
+                    sq = game_board[row_orig][each_col_num]
+                    for key in sq:
+                        if sq[key] != "-":
+                            # If there's a piece in the way
+                            return False
+            elif col_dest > col_orig:                                        # trying to move right (from starting board)
+                for each_col_num in range(col_orig + 1, col_dest):
+                    sq = game_board[row_orig][each_col_num]
+                    for key in sq:
+                        if sq[key] != "-":
+                            # If there's a piece in the way
+                            return False
+            return True
+
+        elif col_orig == col_dest:
+            # Piece is moving forwards/backwards - SAME COLUMN
+            if row_dest > row_orig:                                          # trying to move down (from starting board)
+                for row_num in range(row_orig+1, row_dest):
+                    sq = game_board[row_num][col_orig]
+                    for key in sq:
+                        if sq[key] != "-":
+                            # If there's a piece in the way
+                            return False
+            elif row_orig > row_dest:                                        # trying to move up (from starting board)
+                for row_num in range(row_dest+1, row_orig):
+                    sq = game_board[row_num][col_orig]
+                    for key in sq:
+                        if sq[key] != "-":
+                            # If there's a piece in the way
+                            return False
+            return True
+        # If tried diagonal:
+        return False
+
+class KnightMove(ChessPieceMove):
+    """Represents a KnightMove that inherits from ChessPieceMove."""
+    def __init__(self, original_sq, destination_sq):
+        """Creates a KnightMove with an original_sq, destination_sq, row to list int converter, and column to order
+        num in list converter."""
+        super().__init__(original_sq, destination_sq)
+
+    def is_move_valid(self):
+        """Checks if proposed knight move is valid. Knights can move in an L shape (moving 2 and moving 1 in different
+        directions) and can jump over other pieces."""
+        row_orig = self._row_to_list[self._original_sq[1]]  # gets row -> corresponding list NUM
+        col_orig = self._col_to_num[self._original_sq[0]]  # gets column -> corresponding order NUM in list
+
+        row_dest = self._row_to_list[self._destination_sq[1]]
+        col_dest = self._col_to_num[self._destination_sq[0]]
+
+        if abs(row_orig - row_dest) == 2 and abs(col_orig - col_dest) == 1:
+            return True
+        elif abs(col_orig - col_dest) == 2 and abs(row_orig - row_dest) == 1:
+            return True
+        # If L shape is not made:
+        return False
+
+
+
+class BishopMove(ChessPieceMove):
+    """Represents a BishopMove that inherits from ChessPieceMove."""
+    def __init__(self, original_sq, destination_sq):
+        """Creates a BishopMove with an original_sq, destination_sq, row to list int converter, and column to order
+        num in list converter."""
+        super().__init__(original_sq, destination_sq)
+
+    def is_move_valid(self, game_board):
+        """Checks if proposed bishop move is valid."""
+        row_orig = self._row_to_list[self._original_sq[1]]  # gets row -> corresponding list NUM
+        col_orig = self._col_to_num[self._original_sq[0]]  # gets column -> corresponding order NUM in list
+
+        row_dest = self._row_to_list[self._destination_sq[1]]
+        col_dest = self._col_to_num[self._destination_sq[0]]
+
+        if abs(row_orig - row_dest) == abs(col_orig - col_dest):
+            # if moving diagonally, check to see if no pieces in the way
+            if row_dest < row_orig:
+                # If row decreasing
+                row_start, row_stop = row_dest, row_orig
+                if col_dest < col_orig:
+                    # If row and col decreasing
+                    col_start, col_stop = col_dest, col_orig
+                elif col_dest > col_orig:
+                    # if row decreasing, col increasing
+                    col_start, col_stop = col_orig, col_dest
+            elif row_dest > row_orig:
+                # If row increasing
+                row_start, row_stop = row_orig, row_dest
+                if col_dest > col_orig:
+                    # If row and col increasing
+                    col_start, col_stop = col_orig, col_dest
+                if col_dest < col_orig:
+                    # If row increasing, col decreasing
+                    col_start, col_stop = col_dest, col_orig
+
+            while row_start < row_stop and col_start < col_stop:
+                row_start += 1
+                col_start += 1
+                sq = game_board[row_start][col_start]
+                for key in sq:
+                    if sq[key] != "-":
+                        # If there's a piece in the way
+                        return False
+            # If diagonal and no piece found in its way, return True
+            return True
+        # Not moving diagonally
+        else:
+            return False
+
+
+
+class QueenMove(ChessPieceMove):
+    """Represents a QueenMove that inherits from ChessPieceMove."""
+    def __init__(self, original_sq, destination_sq):
+        """Creates a QueenMove with an original_sq, destination_sq, row to list int converter, and column to order
+        num in list converter."""
+        super().__init__(original_sq, destination_sq)
+
+    def is_move_valid(self, game_board):
+        """Checks if proposed queen move is valid. Queen can move like a rook or bishop."""
+        rook_move = RookMove(self._original_sq, self._destination_sq)
+        bishop_move = BishopMove(self._original_sq, self._destination_sq)
+
+        # If its a valid rook or bishop move it's a valid queen move
+        return rook_move.is_move_valid(game_board) or bishop_move.is_move_valid(game_board)
+
+
+class KingMove(ChessPieceMove):
+    """Represents a KingMove that inherits from ChessPieceMove."""
+    def __init__(self, original_sq, destination_sq):
+        """Creates a KingMove with an original_sq, destination_sq, row to list int converter, and column to order
+        num in list converter."""
+        super().__init__(original_sq, destination_sq)
+
+    def is_move_valid(self):
+        """Checks if proposed king move is valid. King can move 1 square in any direction."""
+        row_orig = self._row_to_list[self._original_sq[1]]  # gets row -> corresponding list NUM
+        col_orig = self._col_to_num[self._original_sq[0]]  # gets column -> corresponding order NUM in list
+
+        row_dest = self._row_to_list[self._destination_sq[1]]
+        col_dest = self._col_to_num[self._destination_sq[0]]
+
+        if abs(row_orig-row_dest) == 1 and col_orig == col_dest:
+            # if moved backward or forward 1
+            return True
+        elif abs(col_orig-col_dest) == 1 and row_orig == row_dest:
+            # if moved sideways 1
+            return True
+        elif abs(row_orig-row_dest) == 1 and abs(col_orig-col_dest) == 1:
+            # if moved diagonally 1
+            return True
+        # if 1 square was not moved
+        return False
+
 
 
 #   DETAILED TEXT DESCRIPTIONS OF HOW TO HANDLE THE SCENARIOS
