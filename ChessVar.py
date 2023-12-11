@@ -398,36 +398,44 @@ class BishopMove(ChessPieceMove):
 
         if abs(row_orig - row_dest) == abs(col_orig - col_dest):
             # if moving diagonally, check to see if no pieces in the way
-            if row_dest < row_orig:
-                # If row decreasing
-                row_start, row_stop = row_dest, row_orig
-                if col_dest < col_orig:
-                    # If row and col decreasing
-                    col_start, col_stop = col_dest, col_orig
-                elif col_dest > col_orig:
-                    # if row decreasing, col increasing
-                    col_start, col_stop = col_orig, col_dest
-            elif row_dest > row_orig:
-                # If row increasing
-                row_start, row_stop = row_orig, row_dest
-                if col_dest > col_orig:
-                    # If row and col increasing
-                    col_start, col_stop = col_orig, col_dest
-                if col_dest < col_orig:
-                    # If row increasing, col decreasing
-                    col_start, col_stop = col_dest, col_orig
-
-            while row_start < row_stop and col_start < col_stop:
-                row_start += 1
-                col_start += 1
-                sq = game_board[row_start][col_start]
-                if "-" not in sq:
-                    return False
+            row_start, row_stop = row_orig, row_dest
+            col_start, col_stop = col_orig, col_dest
+            if row_dest < row_orig and col_dest > col_orig:
+                # If row decreasing and col increasing
+                while row_start > row_stop and col_start < col_stop:
+                    row_start -= 1
+                    col_start += 1
+                    sq = game_board[row_start][col_start]
+                    if "-" not in sq:
+                        return False
+            elif row_dest < row_orig and col_dest < col_orig:
+                # if row and col decr
+                while row_start > row_stop and col_start > col_stop:
+                    row_start -= 1
+                    col_start -= 1
+                    sq = game_board[row_start][col_start]
+                    if "-" not in sq:
+                        return False
+            elif row_dest > row_orig and col_dest > col_orig:
+                # if row and col incr
+                while row_start < row_stop and col_start < col_stop:
+                    row_start += 1
+                    col_start += 1
+                    sq = game_board[row_start][col_start]
+                    if "-" not in sq:
+                        return False
+            elif row_dest > row_orig and col_dest < col_orig:
+                # if row incr and col decr
+                while row_start < row_stop and col_start > col_stop:
+                    row_start += 1
+                    col_start -= 1
+                    sq = game_board[row_start][col_start]
+                    if "-" not in sq:
+                        return False
             # If diagonal and no piece found in its way, return True
             return True
         # Not moving diagonally
-        else:
-            return False
+        return False
 
 
 
@@ -520,9 +528,11 @@ class KingMove(ChessPieceMove):
 #    'BLACK_WON' if we did.
 
 def main():
-    game = ChessVar()
-    game.display_board()
-    game.make_move("h7", "h4")
+    today_game = ChessVar()
+    today_game.create_game_board()
+    today_game.make_move("d2", "d4")  # white turn
+    today_game.make_move("b7", "b5")  # black turn
+    today_game.make_move("c1", "f4")  # white turn
 
 
 if __name__ == '__main__':

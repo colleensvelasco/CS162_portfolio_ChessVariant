@@ -67,3 +67,11 @@ class TestChessVar(unittest.TestCase):
         today_game.create_game_board()
         today_game.make_move("a2", "a4")
         self.assertEqual(today_game.get_current_turn(), "black")
+
+    def test9(self):
+        """Tests make_move (Chess methods)"""
+        today_game = ChessVar()
+        today_game.create_game_board()
+        today_game.make_move("d2", "d4") # white turn
+        today_game.make_move("b7", "b5") # black turn
+        self.assertEqual(today_game.make_move("c1", "f4"), True) # white turn
