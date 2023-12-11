@@ -222,10 +222,10 @@ class ChessVar:
 
         # Checks if destination_sq is occupied with opponent - if so, makes VALID CAPTURE but still returns false valid
         # move
-        in_dest_sq = self.get_square(destination_sq)
-        capture = False
-        if "-" not in in_dest_sq and in_dest_sq[4:9] != self._current_turn:
-            capture = True
+        # in_dest_sq = self.get_square(destination_sq)
+        # capture = False
+        # if "-" not in in_dest_sq and in_dest_sq[4:9] != self._current_turn:
+        #    capture = True
 
         # Otherwise:
         in_orig_square = self.get_square(original_sq)
@@ -256,8 +256,8 @@ class ChessVar:
         self.turn_changer()
 
         # VALID CAPTURE not valid move, so RETURN FALSE
-        if capture:
-            return False
+        # if capture:
+        #    return False
 
         # If empty destination, sq VALID MOVE so returns true
         return True
