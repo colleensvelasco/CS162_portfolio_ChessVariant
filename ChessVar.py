@@ -220,18 +220,12 @@ class ChessVar:
         elif self.get_game_state() == "WHITE_WON" or self.get_game_state() == "BLACK_WON":
             return False
 
-        # Checks if destination_sq is occupied with opponent - if so, makes VALID CAPTURE but still returns false valid
-        # move
-        # in_dest_sq = self.get_square(destination_sq)
-        # capture = False
-        # if "-" not in in_dest_sq and in_dest_sq[4:9] != self._current_turn:
-        #    capture = True
 
         # Otherwise:
         in_orig_square = self.get_square(original_sq)
         in_dest_square = self.get_square(destination_sq)
 
-        # If destination sq is occupied and has opponent, update score of current player
+        # If destination sq is occupied and has opponent, CAPTURE OCCURS, update score of current player
         if "pawn" in in_dest_square:
             chess_piece_cap = in_dest_square[10:14]
         else:
@@ -249,17 +243,13 @@ class ChessVar:
             chess_piece = in_orig_square[10:]
 
         # Still make move regardless
-        self.set_square(original_sq, "-", "-")                                  # empty original_sq
-        self.set_square(destination_sq, self._current_turn, chess_piece) # update destination_sq with current
+        self.set_square(original_sq, "-", "-")                                     # empty original_sq
+        self.set_square(destination_sq, self._current_turn, chess_piece)           # update destination_sq with current
                                                                                     # player and its chess piece
         # Update turn
         self.turn_changer()
 
-        # VALID CAPTURE not valid move, so RETURN FALSE
-        # if capture:
-        #    return False
-
-        # If empty destination, sq VALID MOVE so returns true
+        # VALID MOVE OR VALID CAPTURE
         return True
 
 
