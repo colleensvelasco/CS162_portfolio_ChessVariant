@@ -65,7 +65,7 @@ class ChessVar:
                     row.append(f"{location}: {color} {chess_piece}")
             elif each_row == 1 or each_row == 6:
                 # If pawn row
-                chess_piece = "pawn"
+                chess_piece = "pawn 1"
                 if each_row == 1:
                     # This row is black pawns
                     color = "black"
@@ -171,7 +171,7 @@ class ChessVar:
 
         if "pawn" in in_original_sq:
             pawn_move = PawnMove(original_sq, destination_sq)
-            return pawn_move.is_move_valid(self._round_number, self._board)
+            return pawn_move.is_move_valid(self._round_number, self._board, in_original_sq[-1])
 
         elif "rook" in in_original_sq:
             rook_move = RookMove(original_sq, destination_sq)
@@ -217,15 +217,25 @@ class ChessVar:
             in_dest_square = self.get_square(destination_sq)
 
             # If destination sq is occupied and has opponent, update score of current player
+            if "pawn" in in_dest_square:
+                chess_piece_cap = in_dest_square[10:14]
+            else:
+                chess_piece_cap = in_dest_square[10:]
+
             if "-" not in in_dest_square and in_dest_square[4:9] != self._current_turn:
                 if self._current_turn == "white":
-                    self._white_side.set_score(in_dest_square[10:])
+                    self._white_side.set_score(chess_piece_cap)
                 elif self._current_turn == "black":
-                    self._black_side.set_score(in_dest_square[10:])
+                    self._black_side.set_score(chess_piece_cap)
+
+            if "pawn" in in_orig_square:
+                chess_piece = in_orig_square[10:14]
+            else:
+                chess_piece = in_orig_square[10:]
 
             # Still make move regardless
             self.set_square(original_sq, "-", "-")                                  # empty original_sq
-            self.set_square(destination_sq, self._current_turn, in_orig_square[10:]) # update destination_sq with current
+            self.set_square(destination_sq, self._current_turn, chess_piece) # update destination_sq with current
                                                                                     # player and its chess piece
             # Update turn
             self.turn_changer()
@@ -288,7 +298,7 @@ class PawnMove(ChessPieceMove):
         num in list converter."""
         super().__init__(original_sq, destination_sq)
 
-    def is_move_valid(self, round_number, board_game):
+    def is_move_valid(self, round_number, board_game, first_move_if_there):
         """Checks if proposed pawn move is valid. Pawns can move forward 1 and if it's the first move, can move
         forward 2."""
         row_orig = self._row_to_list[self._original_sq[1]]  # gets row -> corresponding list NUM
@@ -297,8 +307,8 @@ class PawnMove(ChessPieceMove):
         row_dest = self._row_to_list[self._destination_sq[1]]
         col_dest = self._col_to_num[self._destination_sq[0]]
 
-        if round_number == 1:
-            # Pawn can move 2 or 1 if it's the first move for that side
+        if first_move_if_there == "1":
+            # Pawn can move 2 or 1 if it's the first move for that pawn
             if abs(row_orig-row_dest) == 2 and col_orig == col_dest:
                 if row_orig > row_dest:
                     sq_bw = board_game[row_dest+1][col_orig]
@@ -495,9 +505,12 @@ class KingMove(ChessPieceMove):
 def main():
     today_game = ChessVar()
     today_game.create_game_board()
-    today_game.make_move("e2", "e4") # w
-    today_game.make_move("b1", "c3") # b - knight
-    today_game.make_move("d1", "g4")  # w
+    today_game.make_move("e2", "e4")  # white
+    today_game.make_move("e7", "e5")  # b
+    today_game.make_move("d2", "d4")  # w
+    today_game.make_move("a8", "b8")  #
+    today_game.make_move("e5", "e4")
+    today_game.make_move("e5", "d4")
     today_game.display_board()
 
 

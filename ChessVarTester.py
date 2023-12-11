@@ -107,8 +107,8 @@ class TestChessVar(unittest.TestCase):
         today_game.make_move("e2", "e4") # white
         today_game.make_move("e7", "e5") # b
         today_game.make_move("d2", "d4") # w
-        today_game.make_move("a8", "b8") # fail - b
+        today_game.make_move("a8", "b8") #
         today_game.make_move("e5", "e4") # w - pawn not capturing
         self.assertFalse(today_game.make_move("e5", "d4"))
 
-    def test13(self):
+
