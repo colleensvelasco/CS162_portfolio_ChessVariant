@@ -203,9 +203,8 @@ class ChessVar:
         print(f"from_square is {original_sq} and to_square is {destination_sq}")
 
         # Checks if original_sq has opponent or empty, if destination_sq has current player's piece, or if move is
-        # illegal -> if so, update turn and return FALSE
+        # illegal -> if so, return FALSE
         if self.is_move_legal(original_sq, destination_sq) is False:
-            self.turn_changer()
             return False
 
         # Check is game over - get_game_state -> if so, False
@@ -496,12 +495,9 @@ class KingMove(ChessPieceMove):
 def main():
     today_game = ChessVar()
     today_game.create_game_board()
-    today_game.make_move("e2", "e4")  # white
-    today_game.make_move("e7", "e5")  # b
-    today_game.make_move("d2", "d4")  # w
-    today_game.make_move("a8", "b8")  # fail - b
-    today_game.make_move("e5", "e4")  # w - pawn not capturing
-    today_game.make_move("e5", "d4") # b
+    today_game.make_move("e2", "e4") # w
+    today_game.make_move("b1", "c3") # b - knight
+    today_game.make_move("d1", "g4")  # w
     today_game.display_board()
 
 
