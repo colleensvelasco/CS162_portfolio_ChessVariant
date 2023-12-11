@@ -350,7 +350,7 @@ class RookMove(ChessPieceMove):
         elif col_orig == col_dest:
             # Piece is moving forwards/backwards - SAME COLUMN
             if row_dest > row_orig:                                     # trying to move down (from starting board)
-                for row_num in range(row_orig+1, row_dest)
+                for row_num in range(row_orig+1, row_dest):
                     sq = game_board[row_num][col_orig]
                     if "-" not in sq:
                         return False
