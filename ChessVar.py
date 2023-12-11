@@ -8,8 +8,9 @@
 import string
 
 class ChessVar:
-    """Represents a variant of chess consisting of a game board, white side, black side, current turn of
-    the game, and round number. To win the game, one side must capture all of an opponent's pieces of one type."""
+    """Represents a variant of chess consisting of a board, white side, black side, current player turn of
+    the game, round number row number to list converter, and column letter to order in list number. To win the game,
+    one side must capture all of an opponent's pieces of one type."""
 
     def __init__(self):
         """Creates a ChessVar game with a board, black and white sides, a current turn (side),  round number,
@@ -24,12 +25,13 @@ class ChessVar:
         self._row_to_list = {"8": 0, "7": 1, "6": 2, "5": 3, "4": 4, "3": 5, "2": 6, "1": 7 }  # Row to list converter
                                                                                                # Keys=Row, values=list
         self._col_to_num = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}    # Column to num converter
+                                                                                               # Keys=Col, values=order
 
     def create_game_board(self):
         """Creates starting game board 8x8 (rows 1-8) and (columns a-h) consisting of 8 lists (each with 8 elements)
         within the board (an empty list initially). If a square is empty, it is occupied with a "-" in the list.
-        For an occupied square, it contains {"location": [color side occupying, chess piece]}.
-        For example: {"c2":["white", "pawn"]}"""
+        For an occupied square, it contains 'sq_location: color chess_piece'.
+        For example: 'c2: white pawn'"""
         board_whole = list()
         ind = 8
         for each_row in range(8):
@@ -83,7 +85,6 @@ class ChessVar:
             board_whole.append(row)
         return board_whole
 
-            # Keys=Col, values=num
 
     def display_board(self):
         """Prints current board. Iterates through board and prints what each square contains."""
@@ -126,11 +127,11 @@ class ChessVar:
 
     def set_square(self, sq_location, side_color, chess_piece):
         """Takes square location and the side color and chess piece that will occupy the given square and updates it.
-        Side color and chess piece can be None if square is now empty."""
+        Side color and chess piece can be '-' if square is now empty."""
         row = sq_location[1]                                            # Gets number of row
         col = sq_location[0]                                            # Gets letter column
-        row_num = int(self._row_to_list[row])                               # Converts row to list in board
-        col_order = self._col_to_num[col]                           # Converts column to order num in list of board
+        row_num = int(self._row_to_list[row])                           # Converts row to list in board
+        col_order = self._col_to_num[col]                               # Converts column to order num in list of board
 
         if chess_piece == "-":
             # If square is now empty
@@ -140,8 +141,8 @@ class ChessVar:
             self._board[row_num][col_order] = f"{sq_location}: {side_color} {chess_piece}"
 
     def get_square(self, sq_location):
-        """Takes square location string and returns what's contained in that square. If square has "-" as value to
-        location key square is empty and returns None."""
+        """Takes square location string and returns what's contained in that square. If square has '- -'
+        location key square is empty."""
         row = sq_location[1]                                            # Gets number of row
         col = sq_location[0]                                            # Gets letter column
         row_num = int(self._row_to_list[row])                           # Converts row to list in board
@@ -151,9 +152,9 @@ class ChessVar:
         return sq              # "sq_location: side color chess piece" and "sq_location: - -" if empty
 
     def is_move_legal(self, original_sq, destination_sq):
-        """Takes the square moved from (original_sq) (i.e. "b3")and square moved to (destination_sq). Checks the chess piece
-        in the original_sq and makes sure the change in location is legal for that piece type. If not legal or other
-        pieces in path, returns False. Otherwise, returns True. To check what's in square, calls get_square."""
+        """Takes the square moved from (original_sq) (i.e. "b3")and square moved to (destination_sq). Checks the chess
+        piece in the original_sq and makes sure the change in location is legal for that piece type. If not legal or
+        other pieces in path, returns False. Otherwise, returns True. To check what's in square, calls get_square."""
 
         in_original_sq = self.get_square(original_sq)
         if "-" in in_original_sq or in_original_sq[4:9] != self._current_turn:
@@ -192,17 +193,19 @@ class ChessVar:
             king_move = KingMove(original_sq, destination_sq)
             return king_move.is_move_valid()
 
-
     def make_move(self, original_sq, destination_sq):
         """Takes strings representing square moved from and square moved to. If square moved from has
         opponent's piece, illegal move attempted (calls is_move_legal to check), or game is over
-        (calling get_game_state), returns False. Otherwise, makes indicated move and removes captured piece (if any)
-        (calling set_square to do so), updates score (if needed), update whose turn (turn_changer), and returns True."""
+        (calling get_game_state), updates turn, returns False. Otherwise, makes indicated move and removes
+        captured piece (if any) (calling set_square to do so), updates score (if needed), update whose turn
+        (turn_changer), and returns True."""
+
         print(f"from_square is {original_sq} and to_square is {destination_sq}")
 
         # Checks if original_sq has opponent or empty, if destination_sq has current player's piece, or if move is
-        # illegal -> if so, return FALSE
+        # illegal -> if so, update turn and return FALSE
         if self.is_move_legal(original_sq, destination_sq) is False:
+            self.turn_changer()
             return False
 
         # Check is game over - get_game_state -> if so, False
@@ -210,8 +213,6 @@ class ChessVar:
             return False
 
         # Otherwise:
-        # Make move - empty original_sq and destination_sq (if has opponent, update score & move - if not, just move)
-        # Update turn
         else:
             in_orig_square = self.get_square(original_sq)
             in_dest_square = self.get_square(destination_sq)
@@ -231,6 +232,7 @@ class ChessVar:
             self.turn_changer()
 
             return True
+
 
 class BlackSide:
     """Represents the black side of the chess variant game."""
@@ -265,8 +267,10 @@ class WhiteSide:
         """Returns WhiteSide score."""
         return self._score
 
+
 class ChessPieceMove:
     """Represents a ChessPieceMove with an original square and destination square."""
+
     def __init__(self, original_sq, destination_sq):
         """Creates a ChessPieceMove with an original_sq, destination_sq, row to list int converter, and column to order
         num in list converter."""
@@ -279,6 +283,7 @@ class ChessPieceMove:
 
 class PawnMove(ChessPieceMove):
     """Represents a PawnMove that inherits from ChessPieceMove."""
+
     def __init__(self, original_sq, destination_sq):
         """Creates a PawnMove with an original_sq, destination_sq, row to list int converter, and column to order
         num in list converter."""
@@ -293,7 +298,6 @@ class PawnMove(ChessPieceMove):
         row_dest = self._row_to_list[self._destination_sq[1]]
         col_dest = self._col_to_num[self._destination_sq[0]]
 
-
         if round_number == 1:
             # Pawn can move 2 or 1 if it's the first move for that side
             if abs(row_orig-row_dest) == 2 and col_orig == col_dest:
@@ -306,8 +310,10 @@ class PawnMove(ChessPieceMove):
                     if "-" not in sq_bw:
                         return False
                 return True                                      # if nothing in the way
+
         # If not first move, can only move forward 1
         return abs(row_orig-row_dest) == 1 and col_orig == col_dest
+
 
 class RookMove(ChessPieceMove):
     """Represents a RookMove that inherits from ChessPieceMove."""
@@ -320,44 +326,47 @@ class RookMove(ChessPieceMove):
     def is_move_valid(self, game_board):
         """Checks if proposed rook move is valid. Rooks can move forwards, backwards, or sideways any number
         of squares, as long as no other pieces are in its way."""
-        row_orig = self._row_to_list[self._original_sq[1]]  # gets row -> corresponding list NUM
-        col_orig = self._col_to_num[self._original_sq[0]]  # gets column -> corresponding order NUM in list
+
+        row_orig = self._row_to_list[self._original_sq[1]]              # gets row -> corresponding list NUM
+        col_orig = self._col_to_num[self._original_sq[0]]               # gets column -> corresponding order NUM in list
 
         row_dest = self._row_to_list[self._destination_sq[1]]
         col_dest = self._col_to_num[self._destination_sq[0]]
 
         if row_orig == row_dest:
             # Piece is moving sideways - SAME ROW
-            if col_orig > col_dest:                                          # trying to move left (from starting board)
+            if col_orig > col_dest:                                     # trying to move left (from starting board)
                 for each_col_num in range(col_dest + 1, col_orig):
                     sq = game_board[row_orig][each_col_num]
                     if "-" not in sq:
-                        return False                                         # piece in way
-            elif col_dest > col_orig:                                        # trying to move right (from starting board)
+                        return False                                    # piece in way
+            elif col_dest > col_orig:                                   # trying to move right (from starting board)
                 for each_col_num in range(col_orig + 1, col_dest):
                     sq = game_board[row_orig][each_col_num]
                     if "-" not in sq:
-                        return False                                         # piece in way
-            return True                                                      # No piece in the way
+                        return False
+            return True                                                 # No piece in the way
 
         elif col_orig == col_dest:
             # Piece is moving forwards/backwards - SAME COLUMN
-            if row_dest > row_orig:                                          # trying to move down (from starting board)
-                for row_num in range(row_orig+1, row_dest):
+            if row_dest > row_orig:                                     # trying to move down (from starting board)
+                for row_num in range(row_orig+1, row_dest)
                     sq = game_board[row_num][col_orig]
                     if "-" not in sq:
                         return False
-            elif row_orig > row_dest:                                        # trying to move up (from starting board)
+            elif row_orig > row_dest:                                   # trying to move up (from starting board)
                 for row_num in range(row_dest+1, row_orig):
                     sq = game_board[row_num][col_orig]
                     if "-" not in sq:
                         return False
-            return True                                                      # No piece in the way
+            return True                                                 # No piece in the way
         # If tried diagonal:
         return False
 
+
 class KnightMove(ChessPieceMove):
     """Represents a KnightMove that inherits from ChessPieceMove."""
+
     def __init__(self, original_sq, destination_sq):
         """Creates a KnightMove with an original_sq, destination_sq, row to list int converter, and column to order
         num in list converter."""
@@ -367,7 +376,7 @@ class KnightMove(ChessPieceMove):
         """Checks if proposed knight move is valid. Knights can move in an L shape (moving 2 and moving 1 in different
         directions) and can jump over other pieces."""
         row_orig = self._row_to_list[self._original_sq[1]]  # gets row -> corresponding list NUM
-        col_orig = self._col_to_num[self._original_sq[0]]  # gets column -> corresponding order NUM in list
+        col_orig = self._col_to_num[self._original_sq[0]]   # gets column -> corresponding order NUM in list
 
         row_dest = self._row_to_list[self._destination_sq[1]]
         col_dest = self._col_to_num[self._destination_sq[0]]
@@ -380,9 +389,9 @@ class KnightMove(ChessPieceMove):
         return False
 
 
-
 class BishopMove(ChessPieceMove):
     """Represents a BishopMove that inherits from ChessPieceMove."""
+
     def __init__(self, original_sq, destination_sq):
         """Creates a BishopMove with an original_sq, destination_sq, row to list int converter, and column to order
         num in list converter."""
@@ -438,9 +447,9 @@ class BishopMove(ChessPieceMove):
         return False
 
 
-
 class QueenMove(ChessPieceMove):
     """Represents a QueenMove that inherits from ChessPieceMove."""
+
     def __init__(self, original_sq, destination_sq):
         """Creates a QueenMove with an original_sq, destination_sq, row to list int converter, and column to order
         num in list converter."""
@@ -457,6 +466,7 @@ class QueenMove(ChessPieceMove):
 
 class KingMove(ChessPieceMove):
     """Represents a KingMove that inherits from ChessPieceMove."""
+
     def __init__(self, original_sq, destination_sq):
         """Creates a KingMove with an original_sq, destination_sq, row to list int converter, and column to order
         num in list converter."""
@@ -483,58 +493,15 @@ class KingMove(ChessPieceMove):
         return False
 
 
-
-#   DETAILED TEXT DESCRIPTIONS OF HOW TO HANDLE THE SCENARIOS
-
-# 1. Initializing the ChessVar class: The ChessVar class has five private data members and within its init method
-#    we initialize the board to be an empty list, white_side to be an object of the WhiteSide class, black_side to be
-#    an object of the BlackSide class, current_turn to be "white" since the white side makes the first move in
-#    chess, and round_number to be 1.
-#
-# 2. Keeping track of turn order: The white side always makes the first move in chess, so the ChessVar class data
-#    member current_turn is initialized to 'white.' If make_move makes a correct move, we call turn_changer within that
-#    method that changes current_turn to the opposing side and updates data member round_number every time we transition
-#    from black to white, the completion of a round.
-#
-# 3. Keeping track of the current board position: Once we begin the game and the ChessVar class has been initialized,
-#    we call the create_game_board method to create the starting board that's 8x8 (rows 1-8) and (columns a-h)
-#    consisting of 8 lists (each with 8 elements) within the board (an empty list initially).
-#    An occupied square contains {"location": [color side occupying, chess piece]}, such as {"c2":["white", "pawn"]}.
-#    If a square is empty, it is occupied with a "-".
-#    To check what's at current square, we can call get_square method that returns
-#    {"location": [color side occupying, chess piece]} if occupied, and returns None if empty.
-#    To update square, we can call set_square that takes square location, side_color, and chess_piece that's now
-#    going to occupy it. Side_color and chess_piece can both be None, if the square is now empty. It will also be
-#    updated.
-#
-# 4. Determining if a regular move is valid: Once make_move is called, it calls is_move_legal, which takes the original
-#    square moving from and the destination square locations. Checks if original square has opponent piece color,
-#    and if so returns False. Otherwise, checks the chess piece in the original square and makes sure the change in
-#    location is legal for that piece type. If not legal or other pieces in its path, returns False.
-#    Otherwise, returns True.
-#    To check what's in square, we call get_square, returns {"location": [color side occupying, chess piece]} or None,
-#    where we can access the necessary information in the value (list) of the 'location' key.
-#
-# 5. Determining if a capture is valid: After make_move calls is_move_legal and ensures chess piece can move in that way
-#    make_move will only update white_side or black_side current score if destination square contained an opponent's
-#    chess piece.
-#
-# 6. Determining the current state of the game: The get_game_state does this for us by checking data members white_side
-#    and black_side (WhiteSide and BlackSide objects) to see if any of the collected chess pieces in their score
-#    contains all of the opponent's chess pieces for that type.
-#    The score for each side is set up like: {"pawn": 0, "rook": 0, "knight": 0, "bishop": 0, "queen": 0, "king": 0}
-#    We know there are 8 pawns, 2 rooks, 2 knights, 2 bishops, 1 queen, and 1 king that can be captured per side.
-#    The method then returns 'UNFINISHED' if we did not find any piece has been completely captured, or 'WHITE_WON' or
-#    'BLACK_WON' if we did.
-
 def main():
     today_game = ChessVar()
     today_game.create_game_board()
-    today_game.make_move("d2", "d4")
-    today_game.make_move("e7", "e5")
-    today_game.make_move("g1", "f3")
-    today_game.make_move("d8", "g5")
-    today_game.make_move("c1", "g5")
+    today_game.make_move("e2", "e4")  # white
+    today_game.make_move("e7", "e5")  # b
+    today_game.make_move("d2", "d4")  # w
+    today_game.make_move("a8", "b8")  # fail - b
+    today_game.make_move("e5", "e4")  # w - pawn not capturing
+    today_game.make_move("e5", "d4") # b
     today_game.display_board()
 
 

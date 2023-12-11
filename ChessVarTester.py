@@ -99,3 +99,14 @@ class TestChessVar(unittest.TestCase):
         today_game.make_move("f3", "h4")
         today_game.make_move("d8", "h4")
         self.assertEqual(today_game.get_game_state(), "BLACK_WON")
+
+    def test12(self):
+        """Tests captures are accurate"""
+        today_game = ChessVar()
+        today_game.create_game_board()
+        today_game.make_move("e2", "e4") # white
+        today_game.make_move("e7", "e5") # b
+        today_game.make_move("d2", "d4") # w
+        today_game.make_move("a8", "b8") # fail - b
+        today_game.make_move("e5", "e4") # w - pawn not capturing
+        self.assertFalse(today_game.make_move("e5", "d4"))
