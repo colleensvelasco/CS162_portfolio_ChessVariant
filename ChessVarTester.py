@@ -75,3 +75,27 @@ class TestChessVar(unittest.TestCase):
         today_game.make_move("d2", "d4") # white turn
         today_game.make_move("b7", "b5") # black turn
         self.assertEqual(today_game.make_move("c1", "f4"), True) # white turn
+
+    def test10(self):
+        """Tests more moves being made and win for white by capturing
+        black's queen"""
+        today_game = ChessVar()
+        today_game.create_game_board()
+        today_game.make_move("d2", "d4")
+        today_game.make_move("e7", "e5")
+        today_game.make_move("g1", "f3")
+        today_game.make_move("d8", "g5")
+        today_game.make_move("c1", "g5") # bishop
+        self.assertEqual(today_game.get_game_state(), "WHITE_WON")
+
+    def test11(self):
+        """Test win for black by capturing both of white's knights."""
+        today_game = ChessVar()
+        today_game.create_game_board()
+        today_game.make_move("g1", "f3")
+        today_game.make_move("e7", "e6")
+        today_game.make_move("b1", "a3")
+        today_game.make_move("f8", "a3")
+        today_game.make_move("f3", "h4")
+        today_game.make_move("d8", "h4")
+        self.assertEqual(today_game.get_game_state(), "BLACK_WON")

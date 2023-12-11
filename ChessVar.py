@@ -144,9 +144,9 @@ class ChessVar:
         location key square is empty and returns None."""
         row = sq_location[1]                                            # Gets number of row
         col = sq_location[0]                                            # Gets letter column
-        row_num = int(self._row_to_list[row])                               # Converts row to list in board
-        col_order = self._col_to_num[col]                           # Converts column to order num in list of board
-        sq = self._board[row_num][col_order]                       # Contents of sq
+        row_num = int(self._row_to_list[row])                           # Converts row to list in board
+        col_order = self._col_to_num[col]                               # Converts column to order num in list of board
+        sq = self._board[row_num][col_order]                            # Contents of sq
 
         return sq              # "sq_location: side color chess piece" and "sq_location: - -" if empty
 
@@ -398,8 +398,8 @@ class BishopMove(ChessPieceMove):
 
         if abs(row_orig - row_dest) == abs(col_orig - col_dest):
             # if moving diagonally, check to see if no pieces in the way
-            row_start, row_stop = row_orig, row_dest
-            col_start, col_stop = col_orig, col_dest
+            row_start, row_stop = row_orig, row_dest-1
+            col_start, col_stop = col_orig, col_dest-1
             if row_dest < row_orig and col_dest > col_orig:
                 # If row decreasing and col increasing
                 while row_start > row_stop and col_start < col_stop:
@@ -530,9 +530,12 @@ class KingMove(ChessPieceMove):
 def main():
     today_game = ChessVar()
     today_game.create_game_board()
-    today_game.make_move("d2", "d4")  # white turn
-    today_game.make_move("b7", "b5")  # black turn
-    today_game.make_move("c1", "f4")  # white turn
+    today_game.make_move("d2", "d4")
+    today_game.make_move("e7", "e5")
+    today_game.make_move("g1", "f3")
+    today_game.make_move("d8", "g5")
+    today_game.make_move("c1", "g5")
+    today_game.display_board()
 
 
 if __name__ == '__main__':
