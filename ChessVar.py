@@ -336,7 +336,7 @@ class RookMove(ChessPieceMove):
             elif col_dest > col_orig:                                        # trying to move right (from starting board)
                 for each_col_num in range(col_orig + 1, col_dest):
                     sq = game_board[row_orig][each_col_num]
-                    if "-" not in sq_bw:
+                    if "-" not in sq:
                         return False                                         # piece in way
             return True                                                      # No piece in the way
 
