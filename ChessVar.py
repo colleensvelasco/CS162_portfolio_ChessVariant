@@ -13,13 +13,15 @@ class ChessVar:
     one side must capture all of an opponent's pieces of one type."""
 
     def __init__(self):
-        """Creates a ChessVar game with a board, black and white sides, a current turn (side),  round number,
-        row to list in board converter (dictionary), column to order num in list converter (dictionary).
+        """Creates a ChessVar game with a board, black and white sides and their scores, a current turn (side),
+        round number, row to list in board converter (dictionary), column to order num in list converter (dictionary).
         Initializes board as empty list and white_side as an object of WhiteSide class and black_side as an object
         of BlackSide class. Current turn is initialized to white. Round number initialized to 1."""
         self._board = self.create_game_board()
         self._white_side = WhiteSide()
+        self._white_score = self._white_side.get_score()
         self._black_side = BlackSide()
+        self._black_score = self._black_side.get_score()
         self._current_turn = "white"
         self._round_number = 1
         self._row_to_list = {"8": 0, "7": 1, "6": 2, "5": 3, "4": 4, "3": 5, "2": 6, "1": 7 }  # Row to list converter
@@ -92,19 +94,26 @@ class ChessVar:
             print([square for square in row])
             print()
 
+    def get_white_score(self):
+        """Returns white side's score."""
+        return self._white_score
+
+    def get_black_score(self):
+        """Returns white side's score."""
+        return self._black_score
+
     def get_game_state(self):
         """Checks for the state of the game and returns 'UNFINISHED', 'WHITE_WON', or 'BLACK_WON.' A
         side wins when one has captured all of an opponent's pieces of one type. Checks white side and black side
         (WhiteSide and BlackSide objects) to see if any of the collected chess pieces in their score contains
         all of that kind."""
         # Returns dictionary score for each side
-        white_score = self._white_side.get_score()
-        black_score = self._black_side.get_score()
-        if (white_score["pawn"] == 8 or white_score["rook"] == 2 or white_score["knight"] == 2 or
-            white_score["bishop"] == 2 or white_score["queen"] == 1 or white_score["king"] == 1):
+
+        if (self._white_score["pawn"] == 8 or self._white_score["rook"] == 2 or self._white_score["knight"] == 2 or
+            self._white_score["bishop"] == 2 or self._white_score["queen"] == 1 or self._white_score["king"] == 1):
             return "WHITE_WON"
-        elif (black_score["pawn"] == 8 or black_score["rook"] == 2 or black_score["knight"] == 2 or
-            black_score["bishop"] == 2 or black_score["queen"] == 1 or black_score["king"] == 1):
+        elif (self._black_score["pawn"] == 8 or self._black_score["rook"] == 2 or self._black_score["knight"] == 2 or
+            self._black_score["bishop"] == 2 or self._black_score["queen"] == 1 or self._black_score["king"] == 1):
             return "BLACK_WON"
         # Otherwise, game is unfinished:
         return "UNFINISHED"
@@ -211,36 +220,47 @@ class ChessVar:
         elif self.get_game_state() == "WHITE_WON" or self.get_game_state() == "BLACK_WON":
             return False
 
+        # Checks if destination_sq is occupied with opponent - if so, makes VALID CAPTURE but still returns false valid
+        # move
+        in_dest_sq = self.get_square(destination_sq)
+        capture = False
+        if "-" not in in_dest_sq and in_dest_sq[4:9] != self._current_turn:
+            capture = True
+
         # Otherwise:
+        in_orig_square = self.get_square(original_sq)
+        in_dest_square = self.get_square(destination_sq)
+
+        # If destination sq is occupied and has opponent, update score of current player
+        if "pawn" in in_dest_square:
+            chess_piece_cap = in_dest_square[10:14]
         else:
-            in_orig_square = self.get_square(original_sq)
-            in_dest_square = self.get_square(destination_sq)
+            chess_piece_cap = in_dest_square[10:]
 
-            # If destination sq is occupied and has opponent, update score of current player
-            if "pawn" in in_dest_square:
-                chess_piece_cap = in_dest_square[10:14]
-            else:
-                chess_piece_cap = in_dest_square[10:]
+        if "-" not in in_dest_square and in_dest_square[4:9] != self._current_turn:
+            if self._current_turn == "white":
+                self._white_side.set_score(chess_piece_cap)
+            elif self._current_turn == "black":
+                self._black_side.set_score(chess_piece_cap)
 
-            if "-" not in in_dest_square and in_dest_square[4:9] != self._current_turn:
-                if self._current_turn == "white":
-                    self._white_side.set_score(chess_piece_cap)
-                elif self._current_turn == "black":
-                    self._black_side.set_score(chess_piece_cap)
+        if "pawn" in in_orig_square:
+            chess_piece = in_orig_square[10:14]
+        else:
+            chess_piece = in_orig_square[10:]
 
-            if "pawn" in in_orig_square:
-                chess_piece = in_orig_square[10:14]
-            else:
-                chess_piece = in_orig_square[10:]
-
-            # Still make move regardless
-            self.set_square(original_sq, "-", "-")                                  # empty original_sq
-            self.set_square(destination_sq, self._current_turn, chess_piece) # update destination_sq with current
+        # Still make move regardless
+        self.set_square(original_sq, "-", "-")                                  # empty original_sq
+        self.set_square(destination_sq, self._current_turn, chess_piece) # update destination_sq with current
                                                                                     # player and its chess piece
-            # Update turn
-            self.turn_changer()
+        # Update turn
+        self.turn_changer()
 
-            return True
+        # VALID CAPTURE not valid move, so RETURN FALSE
+        if capture:
+            return False
+
+        # If empty destination, sq VALID MOVE so returns true
+        return True
 
 
 class BlackSide:
@@ -505,12 +525,9 @@ class KingMove(ChessPieceMove):
 def main():
     today_game = ChessVar()
     today_game.create_game_board()
-    today_game.make_move("e2", "e4")  # white
-    today_game.make_move("e7", "e5")  # b
-    today_game.make_move("d2", "d4")  # w
-    today_game.make_move("a8", "b8")  #
-    today_game.make_move("e5", "e4")
-    today_game.make_move("e5", "d4")
+    today_game.make_move("d2", "d4")  # white turn
+    today_game.make_move("b7", "b5")  # black turn
+    today_game.make_move("c1", "f4")
     today_game.display_board()
 
 

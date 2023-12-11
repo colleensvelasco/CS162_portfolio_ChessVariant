@@ -28,7 +28,7 @@ class TestChessVar(unittest.TestCase):
         today_game = ChessVar()
         today_game.create_game_board()
         # Returns "sq_location: color chess_piece" if sq is occupied.
-        self.assertEqual(today_game.get_square("c2"), "c2: white pawn")
+        self.assertEqual(today_game.get_square("c2"), "c2: white pawn 1")
 
     def test5(self):
         """Tests set_square for now empty square for class ChessVar."""
@@ -61,14 +61,14 @@ class TestChessVar(unittest.TestCase):
         today_game.make_move("a2", "a4")
         self.assertFalse(today_game.make_move("h7", "h4"))
 
-    def test9(self):
+    def test10(self):
         """Tests make_move and get_current_turn (Chess methods)"""
         today_game = ChessVar()
         today_game.create_game_board()
         today_game.make_move("a2", "a4")
         self.assertEqual(today_game.get_current_turn(), "black")
 
-    def test9(self):
+    def test11(self):
         """Tests make_move (Chess methods)"""
         today_game = ChessVar()
         today_game.create_game_board()
@@ -76,7 +76,7 @@ class TestChessVar(unittest.TestCase):
         today_game.make_move("b7", "b5") # black turn
         self.assertEqual(today_game.make_move("c1", "f4"), True) # white turn
 
-    def test10(self):
+    def test12(self):
         """Tests more moves being made and win for white by capturing
         black's queen"""
         today_game = ChessVar()
@@ -88,7 +88,7 @@ class TestChessVar(unittest.TestCase):
         today_game.make_move("c1", "g5") # bishop
         self.assertEqual(today_game.get_game_state(), "WHITE_WON")
 
-    def test11(self):
+    def test13(self):
         """Test win for black by capturing both of white's knights."""
         today_game = ChessVar()
         today_game.create_game_board()
@@ -100,7 +100,7 @@ class TestChessVar(unittest.TestCase):
         today_game.make_move("d8", "h4")
         self.assertEqual(today_game.get_game_state(), "BLACK_WON")
 
-    def test12(self):
+    def test14(self):
         """Tests captures are accurate"""
         today_game = ChessVar()
         today_game.create_game_board()
@@ -108,7 +108,6 @@ class TestChessVar(unittest.TestCase):
         today_game.make_move("e7", "e5") # b
         today_game.make_move("d2", "d4") # w
         today_game.make_move("a8", "b8") #
-        today_game.make_move("e5", "e4") # w - pawn not capturing
-        self.assertFalse(today_game.make_move("e5", "d4"))
+        self.assertFalse(today_game.make_move("e5", "e4")) # w - pawn not capturing
 
 
