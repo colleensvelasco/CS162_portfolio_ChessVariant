@@ -58,8 +58,12 @@ class TestChessVar(unittest.TestCase):
         """Tests is_move_legal and make_move (ChessVar methods) for pawn and is_move_valid (PawnMove method)."""
         today_game = ChessVar()
         today_game.create_game_board()
-        self.assertTrue(today_game.make_move("e2", "e4"))
+        today_game.make_move("a2", "a4")
+        self.assertFalse(today_game.make_move("h7", "h4"))
 
     def test9(self):
-        """Tests is_move_legal and make_move (Chess methods) for"""
-
+        """Tests make_move and get_current_turn (Chess methods)"""
+        today_game = ChessVar()
+        today_game.create_game_board()
+        today_game.make_move("a2", "a4")
+        self.assertEqual(today_game.get_current_turn(), "black")

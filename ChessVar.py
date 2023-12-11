@@ -168,27 +168,27 @@ class ChessVar:
         # ALREADY CHECKED FOR INVALIDITY IN ORIGINAL AND DESTINATION SQUARES,
         # CHECK ON CHESS PIECE VALIDITY
 
-        if in_original_sq[1] == "pawn":
+        if "pawn" in in_original_sq:
             pawn_move = PawnMove(original_sq, destination_sq)
             return pawn_move.is_move_valid(self._round_number, self._board)
 
-        elif in_original_sq[1] == "rook":
+        elif "rook" in in_original_sq:
             rook_move = RookMove(original_sq, destination_sq)
             return rook_move.is_move_valid(self._board)
 
-        elif in_original_sq[1] == "knight":
+        elif "knight" in in_original_sq:
             knight_move = KnightMove(original_sq, destination_sq)
             return knight_move.is_move_valid()
 
-        elif in_original_sq[1] == "bishop":
+        elif "bishop" in in_original_sq:
             bishop_move = BishopMove(original_sq, destination_sq)
             return bishop_move.is_move_valid(self._board)
 
-        elif in_original_sq[1] == "queen":
+        elif "queen" in in_original_sq:
             queen_move = QueenMove(original_sq, destination_sq)
             return queen_move.is_move_valid(self._board)
 
-        elif in_original_sq[1] == "king":
+        elif "king" in in_original_sq:
             king_move = KingMove(original_sq, destination_sq)
             return king_move.is_move_valid()
 
@@ -522,6 +522,7 @@ class KingMove(ChessPieceMove):
 def main():
     game = ChessVar()
     game.display_board()
+    game.make_move("h7", "h4")
 
 
 if __name__ == '__main__':
