@@ -225,17 +225,35 @@ class ChessVar:
         in_orig_square = self.get_square(original_sq)
         in_dest_square = self.get_square(destination_sq)
 
-        # If destination sq is occupied and has opponent, CAPTURE OCCURS, update score of current player
-        if "pawn" in in_dest_square:
-            chess_piece_cap = in_dest_square[10:14]
-        else:
-            chess_piece_cap = in_dest_square[10:]
 
-        if "-" not in in_dest_square and in_dest_square[4:9] != self._current_turn:
-            if self._current_turn == "white":
-                self._white_side.set_score(chess_piece_cap)
-            elif self._current_turn == "black":
-                self._black_side.set_score(chess_piece_cap)
+        # If destination sq is occupied and has opponent, CAPTURE OCCURS, update score of current player
+
+        # If pawn, check vertical capture:
+        if "pawn" in in_orig_square:
+            pawn_piece = PawnMove(original_sq, destination_sq)
+            vert_capture = pawn_piece.check_vertical_capture(self._board, self._current_turn)
+            if vert_capture:
+                self.set_square(vert_capture, "-", "-")
+                if "pawn" in vert_capture:
+                    chess_piece_cap = vert_capture[10:14]
+                else:
+                    chess_piece_cap = vert_capture[10:]
+                if self._current_turn == "white":
+                    self._white_side.set_score(chess_piece_cap)
+                else:
+                    self._black_side.set_score(chess_piece_cap)
+
+        # If not, check regular capture:
+        else:
+            if "pawn" in in_dest_square:
+                chess_piece_cap = in_dest_square[10:14]
+            else:
+                chess_piece_cap = in_dest_square[10:]
+            if "-" not in in_dest_square and in_dest_square[4:9] != self._current_turn:
+                if self._current_turn == "white":
+                    self._white_side.set_score(chess_piece_cap)
+                elif self._current_turn == "black":
+                    self._black_side.set_score(chess_piece_cap)
 
         if "pawn" in in_orig_square:
             chess_piece = in_orig_square[10:14]
@@ -245,7 +263,7 @@ class ChessVar:
         # Still make move regardless
         self.set_square(original_sq, "-", "-")                                     # empty original_sq
         self.set_square(destination_sq, self._current_turn, chess_piece)           # update destination_sq with current
-                                                                                    # player and its chess piece
+                                                                                   # player and its chess piece
         # Update turn
         self.turn_changer()
 
@@ -293,10 +311,10 @@ class ChessPieceMove:
     def __init__(self, original_sq, destination_sq):
         """Creates a ChessPieceMove with an original_sq, destination_sq, row to list int converter, and column to order
         num in list converter."""
-        self._original_sq = original_sq    # COL LETTER, ROW NUMBER "b7"
+        self._original_sq = original_sq        # COL LETTER, ROW NUMBER "b7"
         self._destination_sq = destination_sq
         self._row_to_list = {"8": 0, "7": 1, "6": 2, "5": 3, "4": 4, "3": 5, "2": 6, "1": 7}  # Row to list converter
-        self._col_to_num = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}  # Column to num converter
+        self._col_to_num = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}   # Column to num converter
 
 
 
@@ -333,6 +351,27 @@ class PawnMove(ChessPieceMove):
         # If not first move, can only move forward 1
         return abs(row_orig-row_dest) == 1 and col_orig == col_dest
 
+    def check_vertical_capture(self, board_game, current_turn):
+        """Checks if pawn can vertical capture."""
+        left_vertical_col = self._col_to_num[self._destination_sq[0]] - 1
+        right_vertical_col = self._col_to_num[self._destination_sq[0]] + 1
+
+        if current_turn == "white":
+            vert_row = int(self._destination_sq[1]) - 1
+        else:
+            vert_row = int(self._destination_sq[1]) + 1
+
+        left_sq = board_game[vert_row][left_vertical_col]
+        right_sq = board_game[vert_row][right_vertical_col]
+        if "-" not in left_sq and current_turn not in left_sq:
+            # Left vertical capture
+            vert_capture = left_sq
+        elif "-" not in right_sq and current_turn not in right_sq:
+            # Right vertical capture
+            vert_capture = right_sq
+        else:
+            vert_capture = None
+        return vert_capture
 
 class RookMove(ChessPieceMove):
     """Represents a RookMove that inherits from ChessPieceMove."""
